@@ -22,7 +22,7 @@ const VideoWithHighlights = (props: Props) => {
   })
 
   return (
-    <div ref={sectionRef} className="relative w-full aspect-video">
+    <div ref={sectionRef} className="relative w-full max-w-7xl mx-auto aspect-video">
       <ul className="absolute w-full -bottom-8 lg:bottom-auto lg:-top-20 flex flex-wrap items-center gap-4 lg:gap-8 justify-center text-center mx-auto z-30">
         {props.highlights.map((highlight) => (
           <li key={highlight} className="flex items-center gap-2 text-sm whitespace-nowrap">
@@ -39,7 +39,7 @@ const VideoWithHighlights = (props: Props) => {
       />
       {showVideo && (
         <video
-          className="relative z-0 rounded-xl overflow-hidden"
+          className="relative z-0 rounded-xl overflow-hidden border"
           height="100%"
           width="100%"
           loop
