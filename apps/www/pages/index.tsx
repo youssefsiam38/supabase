@@ -15,6 +15,7 @@ const Products = dynamic(() => import('~/components/Products/index'))
 const BuiltExamples = dynamic(() => import('components/BuiltWithSupabase/index'))
 const MadeForDevelopers = dynamic(() => import('components/MadeForDevelopers/index'))
 const AdminAccess = dynamic(() => import('components/AdminAccess/index'))
+const DashboardFeatures = dynamic(() => import('components/Sections/DashboardFeatures'))
 const CTABanner = dynamic(() => import('components/CTABanner/index'))
 const CustomerStories = dynamic(() => import('components/CustomerStories'))
 const TwitterSocialSection = dynamic(() => import('~/components/TwitterSocialSection'))
@@ -41,7 +42,8 @@ const Index = ({ customerStories }: Props) => {
       <TwitterSocialSection />
       <BuiltExamples />
       <MadeForDevelopers />
-      <AdminAccess />
+      <DashboardFeatures {...content.dashboardFeatures} />
+      {/* <AdminAccess /> */}
       <CustomerStories customerStories={customerStories} />
       <CTABanner />
     </Layout>

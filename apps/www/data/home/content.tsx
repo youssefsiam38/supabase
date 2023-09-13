@@ -1,5 +1,5 @@
-import solutions from '../Solutions'
-// import { frameworks } from '../frameworks'
+import VideoWithHighlights from '~/components/VideoWithHighlights'
+import solutions from '~/data/Solutions'
 
 export default {
   heroSection: {
@@ -32,5 +32,60 @@ export default {
   },
   productsSection: {
     products: { ...solutions },
+  },
+  dashboardFeatures: {
+    badge: 'Hosted Studio',
+    title: (
+      <>
+        Manage your app <br className="hidden md:block" />
+        without leaving the dashboard
+      </>
+    ),
+    tabs: [
+      {
+        label: 'Table Editor',
+        panel: () => (
+          <VideoWithHighlights
+            video={'/images/index/dashboard/table-editor-demo.mp4'}
+            highlights={[
+              'Full CRUD',
+              'Materialized Views',
+              'Foreign Tables',
+              'Partitioned Tables',
+              'Easy as a spreadsheet',
+            ]}
+          />
+        ),
+      },
+      {
+        label: 'SQL Editor',
+        panel: () => (
+          <VideoWithHighlights
+            video={'/images/index/dashboard/table-editor-demo.mp4'}
+            highlights={[
+              'AI SQL Editor',
+              'Row Level Security',
+              'Save time using Templates',
+              'Save and reuse Queries',
+            ]}
+          />
+        ),
+      },
+      {
+        label: 'Auth Rules',
+        panel: () => (
+          <VideoWithHighlights
+            video={'/images/index/dashboard/table-editor-demo.mp4'}
+            highlights={[
+              'Email Logins',
+              'Magic Links',
+              '20+ Third-party Logins',
+              'Custom Access Policies via RLS',
+              'Password Recovery',
+            ]}
+          />
+        ),
+      },
+    ],
   },
 }
