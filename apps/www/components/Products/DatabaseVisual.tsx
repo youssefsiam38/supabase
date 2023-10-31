@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import Image from 'next/image'
 
 const DatabaseVisual = () => {
   const containerRef = useRef(null)
   const ref = useRef(null)
-  const [gradientPos, setGradientPos] = useState({ x: 0, y: 0 })
+  const gradientRef1 = useRef<any>(null)
+  const gradientRef2 = useRef<any>(null)
+  const gradientRef3 = useRef<any>(null)
 
   const handleGlow = (event: any) => {
     if (!ref.current || !containerRef.current) return null
@@ -29,7 +31,10 @@ const DatabaseVisual = () => {
     const { x: svgX, y: svgY } = svgElement.getBoundingClientRect()
     const x = event.clientX - svgX
     const y = event.clientY - svgY
-    setGradientPos({ x, y })
+    const transformValue = `translate(${x} ${y}) rotate(45) scale(166 180)`
+    gradientRef1.current.setAttribute('gradientTransform', transformValue)
+    gradientRef2.current.setAttribute('gradientTransform', transformValue)
+    gradientRef3.current.setAttribute('gradientTransform', transformValue)
   }
 
   useEffect(() => {
@@ -40,8 +45,6 @@ const DatabaseVisual = () => {
       window.removeEventListener('mousemove', handleGlow)
     }
   }, [])
-
-  const gradientTransform = `translate(${gradientPos?.x} ${gradientPos?.y}) rotate(45) scale(166 180)`
 
   return (
     <figure
@@ -97,34 +100,34 @@ const DatabaseVisual = () => {
           </g>
           <defs>
             <radialGradient
+              ref={gradientRef1}
               id="paint4_radial_467_4905"
               cx="0"
               cy="0"
               r="1"
               gradientUnits="userSpaceOnUse"
-              gradientTransform={gradientTransform}
             >
               <stop stopColor="var(--colors-brand9)" />
               <stop offset="1" stopColor="#7C7C7C" />
             </radialGradient>
             <radialGradient
+              ref={gradientRef2}
               id="paint5_radial_467_4905"
               cx="0"
               cy="0"
               r="1"
               gradientUnits="userSpaceOnUse"
-              gradientTransform={gradientTransform}
             >
               <stop stopColor="var(--colors-brand9)" />
               <stop offset="1" stopColor="#7C7C7C" />
             </radialGradient>
             <radialGradient
+              ref={gradientRef3}
               id="paint6_radial_467_4905"
               cx="0"
               cy="0"
               r="1"
               gradientUnits="userSpaceOnUse"
-              gradientTransform={gradientTransform}
             >
               <stop stopColor="var(--colors-brand9)" />
               <stop offset="1" stopColor="#7C7C7C" />

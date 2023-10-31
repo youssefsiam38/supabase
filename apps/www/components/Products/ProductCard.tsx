@@ -32,7 +32,7 @@ const ProductCard = ({
     onClick={onClick}
   >
     <Panel
-      hasShimmer
+      // hasShimmer
       hasActiveOnHover
       outerClassName="relative w-full h-full shadow-lg p-0"
       innerClassName={[
