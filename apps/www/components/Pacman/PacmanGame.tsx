@@ -1016,7 +1016,7 @@ const PacmanGame = () => {
       ctx.fillStyle = colors.dialog
       ctx.font = '14px Calibri'
       ctx.fillText('Score: ' + user.theScore(), 30, textBase)
-      ctx.fillText('Level: ' + level, 260, textBase)
+      // ctx.fillText('Level: ' + level, 260, textBase)
     }
 
     function redrawBlock(pos: any) {
