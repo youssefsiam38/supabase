@@ -1,11 +1,97 @@
 import React, { useEffect, useRef, useState } from 'react'
+import supabase from '~/lib/supabase'
+
+/**
+ * Multi-pacman
+ *
+ * To do:
+ * - match two adjacent online "STATUS===READY" players and create game
+ * - when both players click on "ready to play", game countdown starts
+ * - user 1 starts from top-left (?)
+ * - user 2 starts from bottom-right (?)
+ * - no ghosts (?)
+ * - each user moves the pacman to eat dots and collect as many points
+ * - if user 1 eats bonus dot, user 2 can be eaten and loses
+ * - who eats gets bonus + can finish collecting remaining dots points
+ * - if nobody eats nobody, player who collects more points wins
+ * - loser gets no points
+ * - game points are saved to database
+ */
+
+enum USER_STATUS {
+  IDLE = 'IDLE',
+  ENGAGED = 'ENGAGED',
+  PLAYING = 'PLAYING',
+}
+
+interface USER {
+  presence_ref: any
+  online_at?: any
+  id?: string
+  status?: USER_STATUS
+}
 
 const PacmanGame = () => {
+  const [realtimeChannel, setRealtimeChannel] = useState<ReturnType<
+    (typeof supabase)['channel']
+  > | null>(null)
+  const [onlineUsers, setOnlineUsers] = useState<USER[]>([])
   const pacmanRef = useRef(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!realtimeChannel) {
+      const lwxRoom = supabase.channel('lwx_pacman')
+
+      const userStatus = {
+        id: (Math.random() * 1000).toFixed(0).toString(),
+        online_at: new Date().toISOString(),
+        status: USER_STATUS.IDLE,
+      }
+
+      lwxRoom
+        .on('presence', { event: 'sync' }, () => {
+          const newState = lwxRoom.presenceState()
+          const users = [...Object.entries(newState).map(([_, value]) => value[0])]
+
+          // Check player data from db here
+
+          console.log('users', users)
+          setOnlineUsers(users)
+        })
+        .subscribe(async (status) => {
+          if (status !== 'SUBSCRIBED') {
+            return
+          }
+
+          const presenceTrackStatus = await lwxRoom.track(userStatus)
+          console.log(presenceTrackStatus)
+        })
+
+      // lwxRoom
+      //   .on('presence', { event: 'sync' }, () => {
+      //     const newState = lwxRoom.presenceState()
+      //     console.log('sync', newState)
+      //   })
+      //   .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      //     console.log('join', key, newPresences)
+      //   })
+      //   .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      //     console.log('leave', key, leftPresences)
+      //   })
+      //   .subscribe()
+
+      setRealtimeChannel(lwxRoom)
+    }
+
+    return () => {
+      // Cleanup realtime subscription on unmount
+      realtimeChannel?.unsubscribe()
+    }
   }, [])
 
   useEffect(() => {
@@ -794,7 +880,7 @@ const PacmanGame = () => {
     }
   }
 
-  var PACMAN = (function () {
+  var PACMAN_GAME = (function () {
     var state: any = WAITING,
       audio: any = null,
       ghosts: any = [],
@@ -1126,7 +1212,7 @@ const PacmanGame = () => {
   })()
 
   /* Human readable keyCode index */
-  var KEY = {
+  var KEY: any = {
     BACKSPACE: 8,
     TAB: 9,
     NUM_PAD_CLEAR: 12,
@@ -1444,12 +1530,25 @@ const PacmanGame = () => {
 
   function Init() {
     window.setTimeout(function () {
-      PACMAN.init(pacmanRef.current, 'https://raw.githubusercontent.com/daleharvey/pacman/master/')
+      PACMAN_GAME.init(
+        pacmanRef.current,
+        'https://raw.githubusercontent.com/daleharvey/pacman/master/'
+      )
     }, 0)
   }
 
   return (
-    <div className="w-full h-screen flex items-center justify-center">
+    <div className="relative w-full h-screen flex items-center justify-center">
+      <div className="absolute w-full max-w-[130px] top-2 right-2 p-3 rounded border shadow bg-overlay text-foreground flex flex-col gap-2">
+        <p>Online: {onlineUsers.length}</p>
+        <ul>
+          {onlineUsers.map((user, i) => (
+            <li key={user.id}>
+              {i + 1}: {user.id}
+            </li>
+          ))}
+        </ul>
+      </div>
       <div ref={pacmanRef} className="w-[382px] h-[470px] rounded" />
     </div>
   )
