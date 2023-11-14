@@ -31,67 +31,14 @@ interface USER {
   status?: USER_STATUS
 }
 
-var NONE: number = 4,
-  UP: number = 3,
-  LEFT: number = 2,
-  DOWN: number = 1,
-  RIGHT: number = 11,
-  WAITING: number = 5,
-  PAUSE: number = 6,
-  PLAYING: number = 7,
-  COUNTDOWN: number = 8,
-  EATEN_PAUSE: number = 9,
-  DYING: number = 10,
-  Pacman: any = {}
-
-const gameDefaults = {
-  state: WAITING,
-  audio: null,
-  ghosts: [],
-  ghostSpecs: ['#00FFDE', '#FF0000', '#FFB8DE', '#FFB847'],
-  eatenCount: 0,
-  level: 0,
-  tick: 0,
-  ghostPos: null,
-  userPos: null,
-  stateChanged: true,
-  timerStart: null,
-  lastTime: 0,
-  ctx: null,
-  timer: null,
-  map: null,
-  user: null,
-  stored: null,
-}
-
 const PacmanGame = () => {
-  const [gameState, setGameState] = useState<any>(WAITING)
-  // const [currentGame, _setCurrentGame] = useState<any>(gameDefaults)
-  var currentGame: any = gameDefaults
+  const [currentGame, setCurrentGame] = useState<any>({})
   const [realtimeChannel, setRealtimeChannel] = useState<ReturnType<
     (typeof supabase)['channel']
   > | null>(null)
   const [onlineUsers, setOnlineUsers] = useState<USER[]>([])
   const pacmanRef = useRef(null)
   const [mounted, setMounted] = useState(false)
-
-  function updateRealtimeValue(name: string, value: any) {
-    currentGame[name] = value
-
-    realtimeChannel?.send({
-      type: 'broadcast',
-      event: 'game',
-      payload: {
-        game: PACMAN_GAME,
-        gameState: {
-          ...currentGame,
-          [name]: value,
-        },
-      },
-    })
-
-    console.log(currentGame)
-  }
 
   useEffect(() => {
     setMounted(true)
@@ -178,6 +125,19 @@ const PacmanGame = () => {
    * fix what happens when a ghost is eaten (should go back to base)
    * do proper ghost mechanics (blinky/wimpy etc)
    */
+
+  var NONE: number = 4,
+    UP: number = 3,
+    LEFT: number = 2,
+    DOWN: number = 1,
+    RIGHT: number = 11,
+    WAITING: number = 5,
+    PAUSE: number = 6,
+    PLAYING: number = 7,
+    COUNTDOWN: number = 8,
+    EATEN_PAUSE: number = 9,
+    DYING: number = 10,
+    Pacman: any = {}
 
   const colors = {
     background: 'hsl(0deg 0% 11%)',
@@ -937,65 +897,44 @@ const PacmanGame = () => {
   }
 
   var PACMAN_GAME = (function () {
-    // var state: any = WAITING,
-    //   audio: any = null,
-    //   ghosts: any = [],
-    //   ghostSpecs: any = ['#00FFDE', '#FF0000', '#FFB8DE', '#FFB847'],
-    //   eatenCount: any = 0,
-    //   level: any = 0,
-    //   tick: any = 0,
-    //   ghostPos: any,
-    //   userPos: any,
-    //   stateChanged: any = true,
-    //   timerStart: any = null,
-    //   lastTime: any = 0,
-    //   ctx: any = null,
-    //   timer: any = null,
-    //   map: any = null,
-    //   user: any = null,
-    //   stored: any = null
-    // var {
-    //   state,
-    //   audio,
-    //   ghosts,
-    //   ghostSpecs,
-    //   eatenCount,
-    //   level,
-    //   tick,
-    //   ghostPos,
-    //   userPos,
-    //   stateChanged,
-    //   timerStart,
-    //   lastTime,
-    //   ctx,
-    //   timer,
-    //   map,
-    //   user,
-    //   stored,
-    // } = currentGame
-
-    // const state = gameState
+    var state: any = WAITING,
+      audio: any = null,
+      ghosts: any = [],
+      ghostSpecs: any = ['#00FFDE', '#FF0000', '#FFB8DE', '#FFB847'],
+      eatenCount: any = 0,
+      level: any = 0,
+      tick: any = 0,
+      ghostPos: any,
+      userPos: any,
+      stateChanged: any = true,
+      timerStart: any = null,
+      lastTime: any = 0,
+      ctx: any = null,
+      timer: any = null,
+      map: any = null,
+      user: any = null,
+      stored: any = null
 
     function getTick() {
-      return currentGame.tick
+      return tick
     }
 
     function drawScore(text: any, position: any) {
-      currentGame.ctx.fillStyle = colors.foreground
-      currentGame.ctx.font = '12px BDCartoonShoutRegular'
-      currentGame.ctx.fillText(
+      ctx.fillStyle = colors.foreground
+      ctx.font = '12px BDCartoonShoutRegular'
+      ctx.fillText(
         text,
-        (position['new']['x'] / 10) * currentGame.map.blockSize,
-        ((position['new']['y'] + 5) / 10) * currentGame.map.blockSize
+        (position['new']['x'] / 10) * map.blockSize,
+        ((position['new']['y'] + 5) / 10) * map.blockSize
       )
     }
 
     function dialog(text: any) {
-      currentGame.ctx.fillStyle = colors.dialog
-      currentGame.ctx.font = '18px Calibri'
-      var width = currentGame.ctx.measureText(text).width,
-        x = (currentGame.map.width * currentGame.map.blockSize - width) / 2
-      currentGame.ctx.fillText(text, x, currentGame.map.height * 10 + 8)
+      ctx.fillStyle = colors.dialog
+      ctx.font = '18px Calibri'
+      var width = ctx.measureText(text).width,
+        x = (map.width * map.blockSize - width) / 2
+      ctx.fillText(text, x, map.height * 10 + 8)
     }
 
     function soundDisabled() {
@@ -1003,65 +942,68 @@ const PacmanGame = () => {
     }
 
     function startLevel() {
-      currentGame.user.resetPosition()
-      for (let i = 0; i < currentGame.ghosts.length; i += 1) {
-        currentGame.ghosts[i].reset()
+      user.resetPosition()
+      for (let i = 0; i < ghosts.length; i += 1) {
+        ghosts[i].reset()
       }
-      currentGame.audio.play('start')
-      currentGame.timerStart = currentGame.tick
+      audio.play('start')
+      timerStart = tick
       setState(COUNTDOWN)
-      // updateRealtimeValue('state', COUNTDOWN)
     }
 
     function startNewGame() {
       setState(WAITING)
-      // updateRealtimeValue('state', WAITING)
-      currentGame.level = 1
-      currentGame.user.reset()
-      currentGame.map.reset()
-      currentGame.map.draw(currentGame.ctx)
+      level = 1
+      user.reset()
+      map.reset()
+      map.draw(ctx)
       startLevel()
-      // updateRealtimeValue('state', WAITING)
+      realtimeChannel?.send({
+        type: 'broadcast',
+        event: 'game',
+        payload: {
+          game: PACMAN_GAME,
+          gameState: {
+            state: 'WAITING',
+            userPos: null,
+          },
+        },
+      })
     }
 
     function keyDown(e: any) {
       if (e.keyCode === KEY.N) {
         startNewGame()
       } else if (e.keyCode === KEY.S) {
-        currentGame.audio.disableSound()
+        audio.disableSound()
         localStorage['soundDisabled'] = !soundDisabled()
-      } else if (e.keyCode === KEY.P && currentGame.state === PAUSE) {
-        currentGame.audio.resume()
-        currentGame.map.draw(currentGame.ctx)
-        setState(currentGame.stored)
-        // updateRealtimeValue('state', stored)
+      } else if (e.keyCode === KEY.P && state === PAUSE) {
+        audio.resume()
+        map.draw(ctx)
+        setState(stored)
       } else if (e.keyCode === KEY.P) {
-        currentGame.stored = currentGame.state
+        stored = state
         setState(PAUSE)
-        // updateRealtimeValue('state', PAUSE)
-        currentGame.audio.pause()
-        currentGame.map.draw(currentGame.ctx)
+        audio.pause()
+        map.draw(ctx)
         dialog('Paused')
-      } else if (currentGame.state !== PAUSE) {
-        return currentGame.user.keyDown(e)
+      } else if (state !== PAUSE) {
+        return user.keyDown(e)
       }
       return true
     }
 
     function loseLife() {
       setState(WAITING)
-      // updateRealtimeValue('state', WAITING)
-      currentGame.user.loseLife()
-      if (currentGame.user.getLives() > 0) {
+      user.loseLife()
+      if (user.getLives() > 0) {
         startLevel()
       }
     }
 
     function setState(nState: any) {
-      // state = nState
-      // setGameState(nState)
-      updateRealtimeValue('state', nState)
-      currentGame.stateChanged = true
+      state = nState
+      stateChanged = true
     }
 
     function collided(user: any, ghost: any) {
@@ -1069,88 +1011,83 @@ const PacmanGame = () => {
     }
 
     function drawFooter() {
-      var topLeft = currentGame.map.height * currentGame.map.blockSize,
+      var topLeft = map.height * map.blockSize,
         textBase = topLeft + 17
 
-      currentGame.ctx.fillStyle = colors.background
-      currentGame.ctx.fillRect(0, topLeft, currentGame.map.width * currentGame.map.blockSize, 30)
+      ctx.fillStyle = colors.background
+      ctx.fillRect(0, topLeft, map.width * map.blockSize, 30)
 
-      currentGame.ctx.fillStyle = colors.dialog
+      ctx.fillStyle = colors.dialog
 
-      for (let i = 0, len = currentGame.user.getLives(); i < len; i++) {
-        currentGame.ctx.fillStyle = colors.dialog
-        currentGame.ctx.beginPath()
-        currentGame.ctx.moveTo(
-          150 + 25 * i + currentGame.map.blockSize / 2,
-          topLeft + 1 + currentGame.map.blockSize / 2
-        )
+      for (let i = 0, len = user.getLives(); i < len; i++) {
+        ctx.fillStyle = colors.dialog
+        ctx.beginPath()
+        ctx.moveTo(150 + 25 * i + map.blockSize / 2, topLeft + 1 + map.blockSize / 2)
 
-        currentGame.ctx.arc(
-          150 + 25 * i + currentGame.map.blockSize / 2,
-          topLeft + 1 + currentGame.map.blockSize / 2,
-          currentGame.map.blockSize / 2,
+        ctx.arc(
+          150 + 25 * i + map.blockSize / 2,
+          topLeft + 1 + map.blockSize / 2,
+          map.blockSize / 2,
           Math.PI * 0.25,
           Math.PI * 1.75,
           false
         )
-        currentGame.ctx.fill()
+        ctx.fill()
       }
 
-      currentGame.ctx.fillStyle = !soundDisabled() ? '#00FF00' : '#FF0000'
-      currentGame.ctx.font = 'bold 16px sans-serif'
-      //currentGame.ctx.fillText("♪", 10, textBase);
-      currentGame.ctx.fillText('s', 10, textBase)
+      ctx.fillStyle = !soundDisabled() ? '#00FF00' : '#FF0000'
+      ctx.font = 'bold 16px sans-serif'
+      //ctx.fillText("♪", 10, textBase);
+      ctx.fillText('s', 10, textBase)
 
-      currentGame.ctx.fillStyle = colors.dialog
-      currentGame.ctx.font = '14px Calibri'
-      currentGame.ctx.fillText('Score: ' + currentGame.user.theScore(), 30, textBase)
-      // currentGame.ctx.fillText('Level: ' + level, 260, textBase)
+      ctx.fillStyle = colors.dialog
+      ctx.font = '14px Calibri'
+      ctx.fillText('Score: ' + user.theScore(), 30, textBase)
+      // ctx.fillText('Level: ' + level, 260, textBase)
     }
 
     function redrawBlock(pos: any) {
-      currentGame.map.drawBlock(Math.floor(pos.y / 10), Math.floor(pos.x / 10), currentGame.ctx)
-      currentGame.map.drawBlock(Math.ceil(pos.y / 10), Math.ceil(pos.x / 10), currentGame.ctx)
+      map.drawBlock(Math.floor(pos.y / 10), Math.floor(pos.x / 10), ctx)
+      map.drawBlock(Math.ceil(pos.y / 10), Math.ceil(pos.x / 10), ctx)
     }
 
     function mainDraw() {
       var diff, u, i, len, nScore
 
-      currentGame.ghostPos = []
+      ghostPos = []
 
-      for (i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
-        currentGame.ghostPos.push(currentGame.ghosts[i].move(currentGame.ctx))
+      for (i = 0, len = ghosts.length; i < len; i += 1) {
+        ghostPos.push(ghosts[i].move(ctx))
       }
-      u = currentGame.user.move(currentGame.ctx)
+      u = user.move(ctx)
 
-      for (i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
-        redrawBlock(currentGame.ghostPos[i].old)
+      for (i = 0, len = ghosts.length; i < len; i += 1) {
+        redrawBlock(ghostPos[i].old)
       }
       redrawBlock(u.old)
 
-      for (i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
-        currentGame.ghosts[i].draw(currentGame.ctx)
+      for (i = 0, len = ghosts.length; i < len; i += 1) {
+        ghosts[i].draw(ctx)
       }
-      currentGame.user.draw(currentGame.ctx)
+      user.draw(ctx)
 
-      currentGame.userPos = u['new']
+      userPos = u['new']
 
-      for (let i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
-        if (collided(currentGame.userPos, currentGame.ghostPos[i]['new'])) {
-          if (currentGame.ghosts[i].isVunerable()) {
-            currentGame.audio.play('eatghost')
-            currentGame.ghosts[i].eat()
-            currentGame.eatenCount += 1
-            nScore = currentGame.eatenCount * 50
-            drawScore(nScore, currentGame.ghostPos[i])
-            currentGame.user.addScore(nScore)
+      for (let i = 0, len = ghosts.length; i < len; i += 1) {
+        if (collided(userPos, ghostPos[i]['new'])) {
+          if (ghosts[i].isVunerable()) {
+            audio.play('eatghost')
+            ghosts[i].eat()
+            eatenCount += 1
+            nScore = eatenCount * 50
+            drawScore(nScore, ghostPos[i])
+            user.addScore(nScore)
             setState(EATEN_PAUSE)
-            // updateRealtimeValue('state', EATEN_PAUSE)
-            currentGame.timerStart = currentGame.tick
-          } else if (currentGame.ghosts[i].isDangerous()) {
-            currentGame.audio.play('die')
+            timerStart = tick
+          } else if (ghosts[i].isDangerous()) {
+            audio.play('die')
             setState(DYING)
-            // updateRealtimeValue('state', DYING)
-            currentGame.timerStart = currentGame.tick
+            timerStart = tick
           }
         }
       }
@@ -1159,50 +1096,42 @@ const PacmanGame = () => {
     function mainLoop() {
       var diff
 
-      if (currentGame.state !== PAUSE) {
-        ++currentGame.tick
+      if (state !== PAUSE) {
+        ++tick
       }
 
-      currentGame.map.drawPills(currentGame.ctx)
+      map.drawPills(ctx)
 
-      if (currentGame.state === PLAYING) {
+      if (state === PLAYING) {
         mainDraw()
-      } else if (currentGame.state === WAITING && currentGame.stateChanged) {
-        currentGame.stateChanged = false
-        currentGame.map.draw(currentGame.ctx)
+      } else if (state === WAITING && stateChanged) {
+        stateChanged = false
+        map.draw(ctx)
         dialog('Press N to start a New game')
-      } else if (
-        currentGame.state === EATEN_PAUSE &&
-        currentGame.tick - currentGame.timerStart > Pacman.FPS / 3
-      ) {
-        currentGame.map.draw(currentGame.ctx)
+      } else if (state === EATEN_PAUSE && tick - timerStart > Pacman.FPS / 3) {
+        map.draw(ctx)
         setState(PLAYING)
-        // updateRealtimeValue('state', PLAYING)
-      } else if (currentGame.state === DYING) {
-        if (currentGame.tick - currentGame.timerStart > Pacman.FPS * 2) {
+      } else if (state === DYING) {
+        if (tick - timerStart > Pacman.FPS * 2) {
           loseLife()
         } else {
-          redrawBlock(currentGame.userPos)
-          for (let i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
-            redrawBlock(currentGame.ghostPos[i].old)
-            currentGame.ghostPos.push(currentGame.ghosts[i].draw(currentGame.ctx))
+          redrawBlock(userPos)
+          for (let i = 0, len = ghosts.length; i < len; i += 1) {
+            redrawBlock(ghostPos[i].old)
+            ghostPos.push(ghosts[i].draw(ctx))
           }
-          currentGame.user.drawDead(
-            currentGame.ctx,
-            (currentGame.tick - currentGame.timerStart) / (Pacman.FPS * 2)
-          )
+          user.drawDead(ctx, (tick - timerStart) / (Pacman.FPS * 2))
         }
-      } else if (currentGame.state === COUNTDOWN) {
-        diff = 5 + Math.floor((currentGame.timerStart - currentGame.tick) / Pacman.FPS)
+      } else if (state === COUNTDOWN) {
+        diff = 5 + Math.floor((timerStart - tick) / Pacman.FPS)
 
         if (diff === 0) {
-          currentGame.map.draw(currentGame.ctx)
+          map.draw(ctx)
           setState(PLAYING)
-          // updateRealtimeValue('state', PLAYING)
         } else {
-          if (diff !== currentGame.lastTime) {
-            currentGame.lastTime = diff
-            currentGame.map.draw(currentGame.ctx)
+          if (diff !== lastTime) {
+            lastTime = diff
+            map.draw(ctx)
             dialog('Starting in: ' + diff)
           }
         }
@@ -1212,25 +1141,24 @@ const PacmanGame = () => {
     }
 
     function eatenPill() {
-      currentGame.audio.play('eatpill')
-      currentGame.timerStart = currentGame.tick
-      currentGame.eatenCount = 0
-      for (let i = 0; i < currentGame.ghosts.length; i += 1) {
-        currentGame.ghosts[i].makeEatable(currentGame.ctx)
+      audio.play('eatpill')
+      timerStart = tick
+      eatenCount = 0
+      for (let i = 0; i < ghosts.length; i += 1) {
+        ghosts[i].makeEatable(ctx)
       }
     }
 
     function completedLevel() {
       setState(WAITING)
-      // updateRealtimeValue('state', WAITING)
-      currentGame.level += 1
-      currentGame.map.reset()
-      currentGame.user.newLevel()
+      level += 1
+      map.reset()
+      user.newLevel()
       startLevel()
     }
 
     function keyPress(e: any) {
-      if (currentGame.state !== WAITING && currentGame.state !== PAUSE) {
+      if (state !== WAITING && state !== PAUSE) {
         e.preventDefault()
         e.stopPropagation()
       }
@@ -1248,24 +1176,24 @@ const PacmanGame = () => {
 
       wrapper.appendChild(canvas)
 
-      currentGame.ctx = canvas.getContext('2d')
+      ctx = canvas.getContext('2d')
 
-      currentGame.audio = new Pacman.Audio({ soundDisabled: soundDisabled })
-      currentGame.map = new Pacman.Map(blockSize)
-      currentGame.user = new Pacman.User(
+      audio = new Pacman.Audio({ soundDisabled: soundDisabled })
+      map = new Pacman.Map(blockSize)
+      user = new Pacman.User(
         {
           completedLevel: completedLevel,
           eatenPill: eatenPill,
         },
-        currentGame.map
+        map
       )
 
-      for (i = 0, len = currentGame.ghostSpecs.length; i < len; i += 1) {
-        ghost = new Pacman.Ghost({ getTick: getTick }, currentGame.map, currentGame.ghostSpecs[i])
-        currentGame.ghosts.push(ghost)
+      for (i = 0, len = ghostSpecs.length; i < len; i += 1) {
+        ghost = new Pacman.Ghost({ getTick: getTick }, map, ghostSpecs[i])
+        ghosts.push(ghost)
       }
 
-      currentGame.map.draw(currentGame.ctx)
+      map.draw(ctx)
       dialog('Loading ...')
 
       // var extension = Modernizr.audio.ogg ? 'ogg' : 'mp3'
@@ -1290,7 +1218,7 @@ const PacmanGame = () => {
         callback()
       } else {
         var x = arr.pop()
-        currentGame.audio.load(x[0], x[1], function () {
+        audio.load(x[0], x[1], function () {
           load(arr, callback)
         })
       }
@@ -1302,7 +1230,7 @@ const PacmanGame = () => {
       document.addEventListener('keydown', keyDown, true)
       document.addEventListener('keypress', keyPress, true)
 
-      currentGame.timer = window.setInterval(mainLoop, 1000 / Pacman.FPS)
+      timer = window.setInterval(mainLoop, 1000 / Pacman.FPS)
     }
 
     return {
