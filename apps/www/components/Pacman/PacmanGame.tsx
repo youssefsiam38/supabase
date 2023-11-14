@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { Button } from 'ui'
 import supabase from '~/lib/supabase'
 
 /**
@@ -65,6 +66,8 @@ const gameDefaults = {
 }
 
 const PacmanGame = () => {
+  const userID = (Math.random() * 1000).toFixed(0).toString()
+  const [userState, setUserState] = useState<USER_STATUS>(USER_STATUS.IDLE)
   const [gameState, setGameState] = useState<any>(WAITING)
   // const [currentGame, _setCurrentGame] = useState<any>(gameDefaults)
   var currentGame: any = gameDefaults
@@ -75,22 +78,24 @@ const PacmanGame = () => {
   const pacmanRef = useRef(null)
   const [mounted, setMounted] = useState(false)
 
-  function updateRealtimeValue(name: string, value: any) {
-    currentGame[name] = value
+  /**
+   * Detect when 2 users are on READY state
+   * create channel/room with 2 users
+   * Init game from user 1
+   * user timer from user 1 (?)
+   * users: user1: id, user2: id
+   * show game + game state on user 2 screen
+   */
 
+  function updateRealtimeValue(game: any) {
     realtimeChannel?.send({
       type: 'broadcast',
-      event: 'game',
+      event: 'pm_game_1',
       payload: {
         game: PACMAN_GAME,
-        gameState: {
-          ...currentGame,
-          [name]: value,
-        },
+        gameState: game,
       },
     })
-
-    console.log(currentGame)
   }
 
   useEffect(() => {
@@ -106,7 +111,7 @@ const PacmanGame = () => {
       })
 
       const userStatus = {
-        id: (Math.random() * 1000).toFixed(0).toString(),
+        id: userID,
         online_at: new Date().toISOString(),
         status: USER_STATUS.IDLE,
       }
@@ -116,44 +121,22 @@ const PacmanGame = () => {
           const newState = lwxRoom.presenceState()
           const users = [...Object.entries(newState).map(([_, value]) => value[0])]
 
-          // Check player data from db here
-
-          console.log('users', users)
           setOnlineUsers(users)
         })
-        .on('broadcast', { event: 'game' }, (payload) => console.log('broadcast payload', payload))
+        .on('broadcast', { event: 'pm_game_1' }, (payload) =>
+          console.log('broadcast payload', payload)
+        )
         .subscribe(async (status) => {
           if (status !== 'SUBSCRIBED') {
             return null
           }
 
-          // lwxRoom.send({
-          //   type: 'broadcast',
-          //   event: 'game',
-          //   payload: {
-          //     game: 'pacman_1',
-          //     gameState: {
-          //       state: 'WAITING',
-          //       userPos: null,
-          //     },
-          //   },
-          // })
-          const presenceTrackStatus = await lwxRoom.track(userStatus)
-          console.log(presenceTrackStatus)
-        })
+          // if (onlineUsers[0])
+          //   lwxRoom.on('broadcast', { event: onlineUsers[0].id! }, (e) => console.log(e))
 
-      // lwxRoom
-      //   .on('presence', { event: 'sync' }, () => {
-      //     const newState = lwxRoom.presenceState()
-      //     console.log('sync', newState)
-      //   })
-      //   .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-      //     console.log('join', key, newPresences)
-      //   })
-      //   .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-      //     console.log('leave', key, leftPresences)
-      //   })
-      //   .subscribe()
+          const presenceTrackStatus = await lwxRoom.track(userStatus)
+          console.log('presenceTrackStatus', presenceTrackStatus)
+        })
 
       setRealtimeChannel(lwxRoom)
     }
@@ -165,8 +148,8 @@ const PacmanGame = () => {
   }, [])
 
   useEffect(() => {
-    if (mounted) Init()
-  }, [mounted])
+    if (userState === USER_STATUS.PLAYING) Init()
+  }, [userState])
 
   if (!mounted) {
     return null
@@ -1060,7 +1043,8 @@ const PacmanGame = () => {
     function setState(nState: any) {
       // state = nState
       // setGameState(nState)
-      updateRealtimeValue('state', nState)
+      // updateRealtimeValue('state', nState)
+      currentGame.state = nState
       currentGame.stateChanged = true
     }
 
@@ -1161,6 +1145,7 @@ const PacmanGame = () => {
 
       if (currentGame.state !== PAUSE) {
         ++currentGame.tick
+        updateRealtimeValue(currentGame)
       }
 
       currentGame.map.drawPills(currentGame.ctx)
@@ -1643,23 +1628,37 @@ const PacmanGame = () => {
   //   }
   // })
 
+  function createOrJoinGame(user: any) {
+    // check if game exists in broadcast stream
+    // if exists and has empty slot, join
+    // if not, create a game
+    // and wait for someone to join your game
+
+    console.log('createOrJoinGame', user, onlineUsers)
+    let games = []
+
+    if (onlineUsers.length >= 2) {
+      setUserState(USER_STATUS.PLAYING)
+    }
+  }
+
   function Init() {
     window.setTimeout(function () {
       PACMAN_GAME.init(
         pacmanRef.current,
         'https://raw.githubusercontent.com/daleharvey/pacman/master/'
       )
-      realtimeChannel?.send({
-        type: 'broadcast',
-        event: 'game',
-        payload: {
-          game: PACMAN_GAME,
-          gameState: {
-            state: 'WAITING',
-            userPos: null,
-          },
-        },
-      })
+      // realtimeChannel?.send({
+      //   type: 'broadcast',
+      //   event: 'game',
+      //   payload: {
+      //     game: PACMAN_GAME,
+      //     gameState: {
+      //       state: 'WAITING',
+      //       userPos: null,
+      //     },
+      //   },
+      // })
     }, 0)
   }
 
@@ -1675,6 +1674,9 @@ const PacmanGame = () => {
           ))}
         </ul>
       </div>
+      {userState === USER_STATUS.IDLE && (
+        <Button onClick={() => createOrJoinGame(userID)}>Ready</Button>
+      )}
       <div ref={pacmanRef} className="w-[382px] h-[470px] rounded" />
     </div>
   )

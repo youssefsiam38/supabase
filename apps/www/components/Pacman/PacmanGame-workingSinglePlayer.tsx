@@ -1577,17 +1577,6 @@ const PacmanGame = () => {
         pacmanRef.current,
         'https://raw.githubusercontent.com/daleharvey/pacman/master/'
       )
-      realtimeChannel?.send({
-        type: 'broadcast',
-        event: 'game',
-        payload: {
-          game: PACMAN_GAME,
-          gameState: {
-            state: 'WAITING',
-            userPos: null,
-          },
-        },
-      })
     }, 0)
   }
 
