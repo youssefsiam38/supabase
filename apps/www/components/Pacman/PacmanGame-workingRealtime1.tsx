@@ -1,9 +1,7 @@
 import { useParams } from 'common'
-import { defaultConfig } from 'next/dist/server/config-shared'
 import React, { useEffect, useRef, useState } from 'react'
 import { Button } from 'ui'
 import supabase from '~/lib/supabase'
-const deepMerge = require('deepmerge')
 
 enum GAME_STATUS {
   IDLE = 'IDLE',
@@ -60,7 +58,7 @@ const PacmanGame = () => {
 
   const [userState, setUserState] = useState<GAME_STATUS>(GAME_STATUS.IDLE)
 
-  let [sharedGameState, setSharedGameState] = useState<any>(defaultConfig)
+  let [gameState, setGameState] = useState<any>({ state: GAME_STATUS.IDLE })
 
   const [hasGameInitialized, setHasGameInitialized] = useState<boolean>(false)
   const [activeGame, setActiveGame] = useState<any>(null)
@@ -81,26 +79,16 @@ const PacmanGame = () => {
   console.log('availableGames', availableGames)
 
   function updateRealtimeValue(game: any) {
-    // if (!activeGame && !hasGameInitialized) return
-    console.log('update')
-    // if (!activeGame && !hasGameInitialized) return
+    if (!activeGame && !hasGameInitialized) return
 
-    const payload: any = {
+    realtimeGameChannel?.send({
       type: 'broadcast',
       event: activeGame,
       payload: {
         state: GAME_STATUS.PLAYING,
-        sender: userID,
         game: game,
       },
-    }
-
-    console.log('sending payload: ', payload)
-
-    realtimeGameChannel?.send(payload)
-    // .then((res) => console.log('then res', res))
-    // .catch((err: any) => console.log('err', err))
-    // .finally(() => console.log('realtime broadcast end'))
+    })
   }
 
   function onlyUnique(value: any, index: number, array: any[]) {
@@ -179,15 +167,14 @@ const PacmanGame = () => {
         }
 
         // Sync local game state with channel game state
-        // currentGame = payload.game
-        setSharedGameState((prev: any) => deepMerge(prev, payload.game))
+        currentGame = payload.game
       })
     }
 
     return () => {
       realtimeGameChannel?.unsubscribe()
     }
-  }, [realtimeGameChannel, hasGameInitialized, userID])
+  }, [realtimeGameChannel, hasGameInitialized])
 
   const StartGameStream = () => {
     console.log('FUNC: StartGameStream =================')
@@ -207,8 +194,9 @@ const PacmanGame = () => {
   }
 
   function createOrJoinGame(user: any) {
-    // let game: any
+    let game: any
     let newGameName: any
+    let events: any
 
     setUserState(GAME_STATUS.ENGAGED)
 
@@ -255,7 +243,7 @@ const PacmanGame = () => {
         event: 'lwx_pm',
         payload: {
           users: [userID],
-          game: currentGame,
+          game: game,
         },
       },
       { optionz: 'second arg' }
@@ -291,7 +279,6 @@ const PacmanGame = () => {
   }
 
   Pacman.FPS = 30
-  // Pacman.FPS = 10
 
   Pacman.Ghost = function (game: any, map: any, colour: any) {
     var position: any = null,
@@ -1217,8 +1204,6 @@ const PacmanGame = () => {
           }
         }
       }
-
-      setSharedGameState((prev: any) => deepMerge(prev, currentGame))
     }
 
     function mainLoop() {
@@ -1226,7 +1211,7 @@ const PacmanGame = () => {
 
       if (currentGame.state !== PAUSE) {
         ++currentGame.tick
-        updateRealtimeValue(sharedGameState)
+        updateRealtimeValue(currentGame)
       }
 
       currentGame.map.drawPills(currentGame.ctx)
@@ -1684,10 +1669,6 @@ const PacmanGame = () => {
     }, 0)
   }
 
-  useEffect(() => {
-    console.log('sharedGameState', sharedGameState)
-  }, [sharedGameState])
-
   return (
     <div className="relative w-full h-screen flex items-center justify-center">
       <div className="absolute w-full max-w-[220px] top-2 right-2 p-3 rounded border shadow bg-overlay text-foreground text-sm flex flex-col gap-2">
@@ -1703,9 +1684,6 @@ const PacmanGame = () => {
 
         <p className="mt-1 pt-3 border-t">User state: {userState?.toString()}</p>
         <p className="mt-1 pt-3 border-t">Initialized game: {hasGameInitialized?.toString()}</p>
-        <p className="mt-1 pt-3 border-t">
-          User Pos: x {currentGame.userPos?.x.toString()} - y {currentGame.userPos?.y.toString()}
-        </p>
       </div>
       {userState === GAME_STATUS.IDLE && (
         <Button onClick={() => createOrJoinGame(userID)}>Ready</Button>

@@ -1,5 +1,4 @@
 import { useParams } from 'common'
-import { defaultConfig } from 'next/dist/server/config-shared'
 import React, { useEffect, useRef, useState } from 'react'
 import { Button } from 'ui'
 import supabase from '~/lib/supabase'
@@ -60,7 +59,7 @@ const PacmanGame = () => {
 
   const [userState, setUserState] = useState<GAME_STATUS>(GAME_STATUS.IDLE)
 
-  let [sharedGameState, setSharedGameState] = useState<any>(defaultConfig)
+  let [sharedGameState, setSharedGameState] = useState<any>({ state: GAME_STATUS.IDLE })
 
   const [hasGameInitialized, setHasGameInitialized] = useState<boolean>(false)
   const [activeGame, setActiveGame] = useState<any>(null)
@@ -85,7 +84,7 @@ const PacmanGame = () => {
     console.log('update')
     // if (!activeGame && !hasGameInitialized) return
 
-    const payload: any = {
+    realtimeGameChannel?.send({
       type: 'broadcast',
       event: activeGame,
       payload: {
@@ -93,11 +92,7 @@ const PacmanGame = () => {
         sender: userID,
         game: game,
       },
-    }
-
-    console.log('sending payload: ', payload)
-
-    realtimeGameChannel?.send(payload)
+    })
     // .then((res) => console.log('then res', res))
     // .catch((err: any) => console.log('err', err))
     // .finally(() => console.log('realtime broadcast end'))
@@ -291,7 +286,6 @@ const PacmanGame = () => {
   }
 
   Pacman.FPS = 30
-  // Pacman.FPS = 10
 
   Pacman.Ghost = function (game: any, map: any, colour: any) {
     var position: any = null,
