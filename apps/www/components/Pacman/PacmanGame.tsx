@@ -179,9 +179,17 @@ const PacmanGame = () => {
 
         console.log('realtimeGameChannel object', obj)
 
-        // Sync local game state with channel game state
+        // Merge and sync local game state with state coming from realtime channel
         if (!isHost) {
-          setSharedGameState(payload.game)
+          setSharedGameState((prev: any) => {
+            // only keep game keys, otherwise deepmerge merges react state stuff from useState internals
+            const obj = Object.entries(prev).filter(([key, _value]) =>
+              sharedStateKeys.includes(key)
+            )
+            const newObj = deepMerge(obj, payload.game)
+
+            return newObj
+          })
         }
       })
     }
@@ -225,9 +233,8 @@ const PacmanGame = () => {
       const hostId = newGameName.split('_')[1]
       setOpponentId(userID)
 
-      currentGame[`user_${hostId}`] = defaultUserObj
-      currentGame[`user_${userID}`] = defaultUserObj
-      // currentGame.users[userID as string] = defaultUserObj
+      currentGame.users[hostId] = defaultUserObj
+      currentGame.users[userID as string] = defaultUserObj
 
       console.log('currentGame', currentGame)
     }
@@ -235,10 +242,7 @@ const PacmanGame = () => {
     // Create game if none available
     if (!availableGames.length) {
       newGameName = `pacman_${userID}`
-
-      // currentGame.users[userID as string] = defaultUserObj
-      currentGame[`user_${userID}`] = defaultUserObj
-      // setOpponentId(userID)
+      currentGame.users[userID as string] = defaultUserObj
     }
 
     console.log('GAME NAME =====> ', newGameName)
@@ -1700,6 +1704,9 @@ const PacmanGame = () => {
   //   console.log('sharedGameState', sharedGameState)
   // }, [sharedGameState])
 
+  /**
+   * Panel data
+   */
   const panelItems = [
     {
       label: 'Active game',
@@ -1770,8 +1777,10 @@ const PacmanGame = () => {
           ))}
         </div>
       </div>
-      {userState === GAME_STATUS.IDLE && <Button onClick={() => createOrJoinGame()}>Ready</Button>}
+      {userState === GAME_STATUS.IDLE && <Button onClick={createOrJoinGame}>Ready</Button>}
       {userState === GAME_STATUS.ENGAGED && <Button onClick={initGameAndStream}>Play</Button>}
+
+      {/* Game canvas */}
       <div ref={pacmanRef} className="w-[382px] h-[470px] rounded" />
     </div>
   )
