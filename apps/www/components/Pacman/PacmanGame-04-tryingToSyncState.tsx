@@ -1,9 +1,16 @@
 import { useParams } from 'common'
+import { defaultConfig } from 'next/dist/server/config-shared'
 import React, { useEffect, useRef, useState } from 'react'
 import { Button } from 'ui'
 import supabase from '~/lib/supabase'
 const deepMerge = require('deepmerge')
 
+/**
+ * Credits for single player Pacman source code:
+ * https://codepen.io/hellokatili/pen/xwKRmo
+ */
+
+// Used on user and game status
 enum GAME_STATUS {
   IDLE = 'IDLE',
   ENGAGED = 'ENGAGED',
@@ -44,6 +51,7 @@ const gameDefaults = {
   tick: 0,
   ghostPos: null,
   userPos: null,
+  users: {},
   stateChanged: true,
   timerStart: null,
   lastTime: 0,
@@ -54,15 +62,18 @@ const gameDefaults = {
   stored: null,
 }
 
+const sharedStateKeys = Object.keys(gameDefaults)
+
+// Main component
 const PacmanGame = () => {
   const { user: userID } = useParams()
 
   const [userState, setUserState] = useState<GAME_STATUS>(GAME_STATUS.IDLE)
-
-  // let [currentGame, setCurrentGame] = useState<any>(gameDefaults)
-  let isInitialized: boolean = false
+  const [sharedGameState, setSharedGameState] = useState<any>(defaultConfig)
   const [hasGameInitialized, setHasGameInitialized] = useState<boolean>(false)
   const [activeGame, setActiveGame] = useState<any>(null)
+  const [hostID, setHostId] = useState<any>(null)
+  const [opponentID, setOpponentId] = useState<any>(null)
   const [availableGames, setAvailableGames] = useState<any>([])
   const [realtimeUsersChannel, setRealtimeUsersChannel] = useState<ReturnType<
     (typeof supabase)['channel']
@@ -74,40 +85,44 @@ const PacmanGame = () => {
 
   const pacmanRef = useRef(null)
 
+  const isHost = userID === hostID
   let currentGame: any = gameDefaults
 
-  console.log('availableGames', availableGames)
-
+  // Set Host ID if an active game has been found or created
   useEffect(() => {
-    console.log('====== hasGameInitialized ========', hasGameInitialized)
-  }, [hasGameInitialized])
+    if (activeGame) setHostId(activeGame?.split('_')[1])
+  }, [activeGame])
 
+  /**
+   * This is fired on every frame (tick)
+   * it should communicate local game state to realtime channel
+   */
   function updateRealtimeValue(game: any) {
-    // const sendEvent = activeGame && initialized
-    const sendEvent = activeGame && isInitialized
-    console.log('updateRealtimeValue????', activeGame, hasGameInitialized, sendEvent)
-    // if (!sendEvent) return
-    console.log('updateRealtimeValue', game)
+    const payload: any = {
+      type: 'broadcast',
+      event: activeGame,
+      payload: {
+        state: GAME_STATUS.PLAYING,
+        sender: userID,
+        game: game,
+      },
+    }
 
-    realtimeGameChannel
-      ?.send({
-        type: 'broadcast',
-        event: activeGame,
-        payload: {
-          sender: userID,
-          state: GAME_STATUS.PLAYING,
-          game: game,
-        },
-      })
-      .then((res) => console.log('res', res))
-      .catch((err) => console.log('err', err))
-    console.log('=== END SEND BROADCAST TICK')
+    realtimeGameChannel?.send(payload)
   }
 
   function onlyUnique(value: any, index: number, array: any[]) {
     return array.indexOf(value) === index
   }
 
+  /**
+   * REALTIME USERS:
+   * Check online users presence and create available games.
+   *
+   * To start: trying to sync first 2 players with:
+   * - 1 Host
+   * - 1 incomming opponent
+   */
   useEffect(() => {
     console.log('USEEFFECT: LISTEN TO LWX USERS =================')
     if (!realtimeUsersChannel && userID) {
@@ -152,41 +167,22 @@ const PacmanGame = () => {
     }
   }, [userID])
 
-  // Game realtime subscription
+  /**
+   * REALTIME: Game realtime subscription
+   * should receive an event on every frame
+   * and merge local state with realtime state
+   */
   useEffect(() => {
-    console.log('USEEFFECT: LISTEN TO REALTIME GAME CHANNEL =================')
+    if (realtimeGameChannel) {
+      realtimeGameChannel.on('broadcast', { event: activeGame }, (obj) => {
+        const { payload } = obj
 
-    if (realtimeGameChannel && userID) {
-      realtimeGameChannel.on('broadcast', { event: activeGame }, (result) => {
-        const { payload } = result
-        const stopGameFromChannel = payload.state === GAME_STATUS.IDLE
-
-        console.log('realtimeGameChannel activeGame broadcast result', result)
-        console.log('realtimeGameChannel activeGame broadcast sender', payload.sender)
-
-        if (hasGameInitialized && stopGameFromChannel) {
-          console.log('GAME STOPPED ========= XXX ')
-          // setHasGameInitialized(false)
-          return
-        }
-
-        const startGame = payload.state === GAME_STATUS.PLAYING
-
-        if (startGame && !hasGameInitialized) {
-          console.log('=********************************=')
-          console.log('Start opponent game')
-          console.log('=********************************=')
-
-          Init()
-          isInitialized = true
-          setHasGameInitialized(true)
-          isInitialized = true
-        }
+        console.log('realtimeGameChannel object', obj)
 
         // Sync local game state with channel game state
-        // currentGame = deepMerge(currentGame, payload.game)
-        // if (payload.sender !== userID)
-        //   setCurrentGame((prevGame: any) => deepMerge(prevGame, payload.game))
+        if (!isHost) {
+          setSharedGameState(payload.game)
+        }
       })
     }
 
@@ -195,38 +191,54 @@ const PacmanGame = () => {
     }
   }, [realtimeGameChannel])
 
-  const StartGameStream = () => {
-    console.log('FUNC: StartGameStream =================')
+  const initGameAndStream = () => {
+    console.log('FUNC: initGameAndStream =================')
 
     setUserState(GAME_STATUS.PLAYING)
+    setSharedGameState(currentGame)
 
     realtimeGameChannel?.send({
       type: 'broadcast',
       event: activeGame,
       payload: {
         state: GAME_STATUS.PLAYING,
-        game: currentGame,
+        game: sharedGameState,
       },
     })
 
     Init()
   }
 
-  function createOrJoinGame(user: any) {
-    let game: any
+  function createOrJoinGame() {
     let newGameName: any
-    let events: any
 
     setUserState(GAME_STATUS.ENGAGED)
 
-    // Join game if available
-    if (availableGames.length) {
-      newGameName = availableGames[0]
+    const defaultUserObj = {
+      userPos: null,
     }
 
-    // Create game if non available
+    // Join game if available, for now just between first 2 users
+    if (availableGames.length) {
+      newGameName = availableGames[0]
+
+      const hostId = newGameName.split('_')[1]
+      setOpponentId(userID)
+
+      currentGame[`user_${hostId}`] = defaultUserObj
+      currentGame[`user_${userID}`] = defaultUserObj
+      // currentGame.users[userID as string] = defaultUserObj
+
+      console.log('currentGame', currentGame)
+    }
+
+    // Create game if none available
     if (!availableGames.length) {
       newGameName = `pacman_${userID}`
+
+      // currentGame.users[userID as string] = defaultUserObj
+      currentGame[`user_${userID}`] = defaultUserObj
+      // setOpponentId(userID)
     }
 
     console.log('GAME NAME =====> ', newGameName)
@@ -237,14 +249,8 @@ const PacmanGame = () => {
     })
 
     newGameChannel
-      .on('presence', { event: 'sync' }, () => {
-        const newState = newGameChannel.presenceState()
-        console.log('newGame new state', newState)
-
-        // setRealtimeGameChannel(users)
-      })
       .on('broadcast', { event: newGameName }, (payload) =>
-        console.log('broadcast payload', payload)
+        console.log('newGameChannel broadcast payload', payload)
       )
       .subscribe(async (status) => {
         if (status !== 'SUBSCRIBED') {
@@ -254,45 +260,29 @@ const PacmanGame = () => {
       })
 
     setRealtimeGameChannel(newGameChannel)
-    // const allChannels = [...supabase.getChannels()]
 
+    // tell main channel that user created or joined a game
     realtimeUsersChannel?.send(
       {
         type: 'broadcast',
         event: 'lwx_pm',
         payload: {
           users: [userID],
-          game: game,
+          game: currentGame,
         },
       },
       { optionz: 'second arg' }
     )
   }
 
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
+  /**
+   * ====== Pacman game logic starts here ======
+   */
 
   const colors = {
     background: 'hsl(0deg 0% 11%)',
     foreground: '#ffffff',
-    brand: 'hsl(153.1deg 60.2% 52.7%)', // original: '#0000BB'
+    brand: 'hsl(153.1deg 60.2% 52.7%)',
     dialog: '#FFFF00',
     eaten: '#222',
   }
@@ -544,7 +534,7 @@ const PacmanGame = () => {
     }
   }
 
-  Pacman.User = function (game: any, map: any) {
+  Pacman.User = function (game: any, map: any, id: any) {
     var position: any = null,
       direction: any = null,
       eaten: any = null,
@@ -1071,25 +1061,23 @@ const PacmanGame = () => {
     }
 
     function startLevel() {
-      currentGame.user.resetPosition()
+      currentGame[`user_${hostID}`].resetPosition()
       for (let i = 0; i < currentGame.ghosts.length; i += 1) {
         currentGame.ghosts[i].reset()
       }
       currentGame.audio.play('start')
       currentGame.timerStart = currentGame.tick
       setState(COUNTDOWN)
-      // updateRealtimeValue('state', COUNTDOWN)
     }
 
     function startNewGame() {
       setState(WAITING)
-      // updateRealtimeValue('state', WAITING)
       currentGame.level = 1
-      currentGame.user.reset()
+      // currentGame.user.reset()
+      currentGame[`user_${hostID}`].reset()
       currentGame.map.reset()
       currentGame.map.draw(currentGame.ctx)
       startLevel()
-      // updateRealtimeValue('state', WAITING)
     }
 
     function keyDown(e: any) {
@@ -1102,33 +1090,30 @@ const PacmanGame = () => {
         currentGame.audio.resume()
         currentGame.map.draw(currentGame.ctx)
         setState(currentGame.stored)
-        // updateRealtimeValue('state', stored)
       } else if (e.keyCode === KEY.P) {
         currentGame.stored = currentGame.state
         setState(PAUSE)
-        // updateRealtimeValue('state', PAUSE)
         currentGame.audio.pause()
         currentGame.map.draw(currentGame.ctx)
         dialog('Paused')
       } else if (currentGame.state !== PAUSE) {
-        return currentGame.user.keyDown(e)
+        // return currentGame.user.keyDown(e)
+        return currentGame[`user_${hostID}`].keyDown(e)
       }
       return true
     }
 
     function loseLife() {
       setState(WAITING)
-      // updateRealtimeValue('state', WAITING)
-      currentGame.user.loseLife()
-      if (currentGame.user.getLives() > 0) {
+      // currentGame.user.loseLife()
+      currentGame[`user_${hostID}`].loseLife()
+      // if (currentGame.user.getLives() > 0) {
+      if (currentGame[`user_${hostID}`].getLives() > 0) {
         startLevel()
       }
     }
 
     function setState(nState: any) {
-      // state = nState
-      // setGameState(nState)
-      // updateRealtimeValue('state', nState)
       currentGame.state = nState
       currentGame.stateChanged = true
     }
@@ -1146,7 +1131,8 @@ const PacmanGame = () => {
 
       currentGame.ctx.fillStyle = colors.dialog
 
-      for (let i = 0, len = currentGame.user.getLives(); i < len; i++) {
+      // for (let i = 0, len = currentGame.user.getLives(); i < len; i++) {
+      for (let i = 0, len = currentGame[`user_${hostID}`].getLives(); i < len; i++) {
         currentGame.ctx.fillStyle = colors.dialog
         currentGame.ctx.beginPath()
         currentGame.ctx.moveTo(
@@ -1172,7 +1158,8 @@ const PacmanGame = () => {
 
       currentGame.ctx.fillStyle = colors.dialog
       currentGame.ctx.font = '14px Calibri'
-      currentGame.ctx.fillText('Score: ' + currentGame.user.theScore(), 30, textBase)
+      // currentGame.ctx.fillText('Score: ' + currentGame.user.theScore(), 30, textBase)
+      currentGame.ctx.fillText('Score: ' + currentGame[`user_${hostID}`].theScore(), 30, textBase)
       // currentGame.ctx.fillText('Level: ' + level, 260, textBase)
     }
 
@@ -1189,7 +1176,8 @@ const PacmanGame = () => {
       for (i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
         currentGame.ghostPos.push(currentGame.ghosts[i].move(currentGame.ctx))
       }
-      u = currentGame.user.move(currentGame.ctx)
+      // u = currentGame.user.move(currentGame.ctx)
+      u = currentGame[`user_${hostID}`].move(currentGame.ctx)
 
       for (i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
         redrawBlock(currentGame.ghostPos[i].old)
@@ -1199,26 +1187,29 @@ const PacmanGame = () => {
       for (i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
         currentGame.ghosts[i].draw(currentGame.ctx)
       }
-      currentGame.user.draw(currentGame.ctx)
+      // currentGame.user.draw(currentGame.ctx)
+      currentGame[`user_${hostID}`].draw(currentGame.ctx)
 
-      currentGame.userPos = u['new']
+      // currentGame.userPos = u['new']
+      // currentGame.users[hostID].userPos = u['new']
+      currentGame[`user_${hostID}`].userPos = u['new']
 
       for (let i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
-        if (collided(currentGame.userPos, currentGame.ghostPos[i]['new'])) {
+        // if (collided(currentGame.users[hostID].userPos, currentGame.ghostPos[i]['new'])) {
+        if (collided(currentGame[`user_${hostID}`].userPos, currentGame.ghostPos[i]['new'])) {
           if (currentGame.ghosts[i].isVunerable()) {
             currentGame.audio.play('eatghost')
             currentGame.ghosts[i].eat()
             currentGame.eatenCount += 1
             nScore = currentGame.eatenCount * 50
             drawScore(nScore, currentGame.ghostPos[i])
-            currentGame.user.addScore(nScore)
+            // currentGame.user.addScore(nScore)
+            currentGame[`user_${hostID}`].addScore(nScore)
             setState(EATEN_PAUSE)
-            // updateRealtimeValue('state', EATEN_PAUSE)
             currentGame.timerStart = currentGame.tick
           } else if (currentGame.ghosts[i].isDangerous()) {
             currentGame.audio.play('die')
             setState(DYING)
-            // updateRealtimeValue('state', DYING)
             currentGame.timerStart = currentGame.tick
           }
         }
@@ -1230,7 +1221,10 @@ const PacmanGame = () => {
 
       if (currentGame.state !== PAUSE) {
         ++currentGame.tick
-        updateRealtimeValue(currentGame)
+
+        // REALTIME: Send realtime event with shared game state
+        console.log('isHost', isHost)
+        if (isHost) updateRealtimeValue(sharedGameState)
       }
 
       currentGame.map.drawPills(currentGame.ctx)
@@ -1247,17 +1241,19 @@ const PacmanGame = () => {
       ) {
         currentGame.map.draw(currentGame.ctx)
         setState(PLAYING)
-        // updateRealtimeValue('state', PLAYING)
       } else if (currentGame.state === DYING) {
         if (currentGame.tick - currentGame.timerStart > Pacman.FPS * 2) {
           loseLife()
         } else {
-          redrawBlock(currentGame.userPos)
+          // redrawBlock(currentGame.userPos)
+          // redrawBlock(currentGame.users[hostID].userPos)
+          redrawBlock(currentGame[`user_${hostID}`].userPos)
           for (let i = 0, len = currentGame.ghosts.length; i < len; i += 1) {
             redrawBlock(currentGame.ghostPos[i].old)
             currentGame.ghostPos.push(currentGame.ghosts[i].draw(currentGame.ctx))
           }
-          currentGame.user.drawDead(
+          // currentGame.user.drawDead(
+          currentGame[`user_${hostID}`].drawDead(
             currentGame.ctx,
             (currentGame.tick - currentGame.timerStart) / (Pacman.FPS * 2)
           )
@@ -1268,7 +1264,6 @@ const PacmanGame = () => {
         if (diff === 0) {
           currentGame.map.draw(currentGame.ctx)
           setState(PLAYING)
-          // updateRealtimeValue('state', PLAYING)
         } else {
           if (diff !== currentGame.lastTime) {
             currentGame.lastTime = diff
@@ -1279,6 +1274,18 @@ const PacmanGame = () => {
       }
 
       drawFooter()
+
+      // REALTIME: merge shared state with local state
+
+      if (isHost) {
+        setSharedGameState((prev: any) => {
+          // only keep game keys, otherwise deepmerge merges react state stuff
+          const obj = Object.entries(prev).filter(([key, _value]) => sharedStateKeys.includes(key))
+          const newObj = deepMerge(obj, currentGame)
+
+          return newObj
+        })
+      }
     }
 
     function eatenPill() {
@@ -1292,10 +1299,10 @@ const PacmanGame = () => {
 
     function completedLevel() {
       setState(WAITING)
-      // updateRealtimeValue('state', WAITING)
       currentGame.level += 1
       currentGame.map.reset()
-      currentGame.user.newLevel()
+      // currentGame.user.newLevel()
+      currentGame[`user_${hostID}`].newLevel()
       startLevel()
     }
 
@@ -1322,12 +1329,14 @@ const PacmanGame = () => {
 
       currentGame.audio = new Pacman.Audio({ soundDisabled: soundDisabled })
       currentGame.map = new Pacman.Map(blockSize)
-      currentGame.user = new Pacman.User(
+      currentGame[`user_${hostID}`] = new Pacman.User(
         {
+          id: userID,
           completedLevel: completedLevel,
           eatenPill: eatenPill,
         },
-        currentGame.map
+        currentGame.map,
+        hostID
       )
 
       for (i = 0, len = currentGame.ghostSpecs.length; i < len; i += 1) {
@@ -1338,6 +1347,7 @@ const PacmanGame = () => {
       currentGame.map.draw(currentGame.ctx)
       dialog('Loading ...')
 
+      // Modernizr gave some problems
       // var extension = Modernizr.audio.ogg ? 'ogg' : 'mp3'
       var extension = 'mp3'
 
@@ -1380,7 +1390,6 @@ const PacmanGame = () => {
     }
   })()
 
-  /* Human readable keyCode index */
   var KEY: any = {
     BACKSPACE: 8,
     TAB: 9,
@@ -1415,7 +1424,6 @@ const PacmanGame = () => {
     NUM_PAD_SOLIDUS: 111,
     NUM_LOCK: 144,
     SCROLL_LOCK: 145,
-    // SEMICOLON: 186,
     EQUALS_SIGN: 187,
     COMMA: 188,
     'HYPHEN-MINUS': 189,
@@ -1685,9 +1693,63 @@ const PacmanGame = () => {
         'https://raw.githubusercontent.com/daleharvey/pacman/master/'
       )
       setHasGameInitialized(true)
-      isInitialized = true
     }, 0)
   }
+
+  // useEffect(() => {
+  //   console.log('sharedGameState', sharedGameState)
+  // }, [sharedGameState])
+
+  const panelItems = [
+    {
+      label: 'Active game',
+      value: activeGame?.toString(),
+    },
+    {
+      label: 'User state',
+      value: userState?.toString(),
+    },
+    {
+      label: 'Available games',
+      value: availableGames?.toString(),
+    },
+    {
+      label: 'Initialized game',
+      value: hasGameInitialized?.toString(),
+    },
+    {
+      label: 'Is host',
+      value: isHost.toString(),
+    },
+    {
+      label: 'Host ID',
+      value: hostID,
+    },
+    {
+      label: 'Opponent ID',
+      value: opponentID,
+    },
+    {
+      label: 'Host Pos',
+      value: `x ${
+        hostID &&
+        sharedGameState[`user_${hostID}`] &&
+        sharedGameState[`user_${hostID}`]?.userPos?.x.toString()
+      } - y ${
+        hostID &&
+        sharedGameState[`user_${hostID}`] &&
+        sharedGameState[`user_${hostID}`]?.userPos?.y.toString()
+      }`,
+    },
+    {
+      label: 'Host Score',
+      value: sharedGameState[`user_${hostID}`]?.theScore(),
+    },
+    {
+      label: 'Frames',
+      value: sharedGameState?.tick,
+    },
+  ]
 
   return (
     <div className="relative w-full h-screen flex items-center justify-center">
@@ -1700,15 +1762,16 @@ const PacmanGame = () => {
             </li>
           ))}
         </ul>
-        <p className="mt-1 pt-3 border-t">Active game: {activeGame?.toString()}</p>
-
-        <p className="mt-1 pt-3 border-t">User state: {userState?.toString()}</p>
-        <p className="mt-1 pt-3 border-t">Initialized game: {hasGameInitialized?.toString()}</p>
+        <div className="mt-1 pt-3 border-t">
+          {panelItems.map((item) => (
+            <p key={item.label} className="py-1">
+              {item.label}: <span className="text-brand">{item.value}</span>
+            </p>
+          ))}
+        </div>
       </div>
-      {userState === GAME_STATUS.IDLE && (
-        <Button onClick={() => createOrJoinGame(userID)}>Ready</Button>
-      )}
-      {userState === GAME_STATUS.ENGAGED && <Button onClick={StartGameStream}>Play</Button>}
+      {userState === GAME_STATUS.IDLE && <Button onClick={() => createOrJoinGame()}>Ready</Button>}
+      {userState === GAME_STATUS.ENGAGED && <Button onClick={initGameAndStream}>Play</Button>}
       <div ref={pacmanRef} className="w-[382px] h-[470px] rounded" />
     </div>
   )
