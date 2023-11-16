@@ -5,6 +5,12 @@ import { Button } from 'ui'
 import supabase from '~/lib/supabase'
 const deepMerge = require('deepmerge')
 
+/**
+ * Credits for single player Pacman source code:
+ * https://codepen.io/hellokatili/pen/xwKRmo
+ */
+
+// Used on user and game status
 enum GAME_STATUS {
   IDLE = 'IDLE',
   ENGAGED = 'ENGAGED',
@@ -58,6 +64,7 @@ const gameDefaults = {
 
 const sharedStateKeys = Object.keys(gameDefaults)
 
+// Main component
 const PacmanGame = () => {
   const { user: userID } = useParams()
 
@@ -81,13 +88,14 @@ const PacmanGame = () => {
   const isHost = userID === hostID
   let currentGame: any = gameDefaults
 
+  // Set Host ID if an active game has been found or created
   useEffect(() => {
     if (activeGame) setHostId(activeGame?.split('_')[1])
   }, [activeGame])
 
   /**
    * This is fired on every frame (tick)
-   * it should communicate local game to realtime channel
+   * it should communicate local game state to realtime channel
    */
   function updateRealtimeValue(game: any) {
     const payload: any = {
@@ -107,6 +115,14 @@ const PacmanGame = () => {
     return array.indexOf(value) === index
   }
 
+  /**
+   * REALTIME USERS:
+   * Check online users presence and create available games.
+   *
+   * To start: trying to sync first 2 players with:
+   * - 1 Host
+   * - 1 incomming opponent
+   */
   useEffect(() => {
     console.log('USEEFFECT: LISTEN TO LWX USERS =================')
     if (!realtimeUsersChannel && userID) {
@@ -164,8 +180,6 @@ const PacmanGame = () => {
         console.log('realtimeGameChannel object', obj)
 
         // Sync local game state with channel game state
-        // currentGame = payload.game
-        // setSharedGameState((prev: any) => {
         if (!isHost) {
           setSharedGameState(payload.game)
         }
@@ -174,21 +188,21 @@ const PacmanGame = () => {
 
     return () => {
       realtimeGameChannel?.unsubscribe()
-      // if (hasGameInitialized) realtimeGameChannel?.unsubscribe()
     }
   }, [realtimeGameChannel])
 
-  const StartGameStream = () => {
-    console.log('FUNC: StartGameStream =================')
+  const initGameAndStream = () => {
+    console.log('FUNC: initGameAndStream =================')
 
     setUserState(GAME_STATUS.PLAYING)
+    setSharedGameState(currentGame)
 
     realtimeGameChannel?.send({
       type: 'broadcast',
       event: activeGame,
       payload: {
         state: GAME_STATUS.PLAYING,
-        game: currentGame,
+        game: sharedGameState,
       },
     })
 
@@ -261,36 +275,19 @@ const PacmanGame = () => {
     )
   }
 
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
-  // #0000BB
+  /**
+   * ====== Pacman game logic starts here ======
+   */
 
   const colors = {
     background: 'hsl(0deg 0% 11%)',
     foreground: '#ffffff',
-    brand: 'hsl(153.1deg 60.2% 52.7%)', // original: '#0000BB'
+    brand: 'hsl(153.1deg 60.2% 52.7%)',
     dialog: '#FFFF00',
     eaten: '#222',
   }
 
   Pacman.FPS = 30
-  // Pacman.FPS = 10
 
   Pacman.Ghost = function (game: any, map: any, colour: any) {
     var position: any = null,
@@ -1744,10 +1741,10 @@ const PacmanGame = () => {
         sharedGameState[`user_${hostID}`]?.userPos?.y.toString()
       }`,
     },
-    // {
-    //   label: 'Host Score',
-    //   value: sharedGameState[`user_${hostID}`]?.theScore(),
-    // },
+    {
+      label: 'Host Score',
+      value: sharedGameState[`user_${hostID}`]?.theScore(),
+    },
     {
       label: 'Frames',
       value: sharedGameState?.tick,
@@ -1774,7 +1771,7 @@ const PacmanGame = () => {
         </div>
       </div>
       {userState === GAME_STATUS.IDLE && <Button onClick={() => createOrJoinGame()}>Ready</Button>}
-      {userState === GAME_STATUS.ENGAGED && <Button onClick={StartGameStream}>Play</Button>}
+      {userState === GAME_STATUS.ENGAGED && <Button onClick={initGameAndStream}>Play</Button>}
       <div ref={pacmanRef} className="w-[382px] h-[470px] rounded" />
     </div>
   )
