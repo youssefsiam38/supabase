@@ -2,11 +2,12 @@ import { MDXProvider } from '@mdx-js/react'
 import { NextSeo } from 'next-seo'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
 import components from '~/components'
 import TableOfContents from '~/components/TableOfContents'
 import HomePageCover from '../components/HomePageCover'
 import { LayoutMainContent } from './DefaultLayout'
+import { CommandMenuV2, INITIAL_ITEMS } from 'ui'
 
 interface Props {
   meta: {
@@ -23,6 +24,19 @@ interface Props {
 
 const HomeLayout: FC<Props> = (props: Props) => {
   const { asPath } = useRouter()
+  const [commandMenuOpen, setCommandMenuOpen] = useState(false)
+
+  useEffect(() => {
+    function toggleCommandMenu(evt: KeyboardEvent) {
+      if (evt.key === 'j' && (evt.metaKey || evt.ctrlKey)) {
+        setCommandMenuOpen((commandMenuOpen) => !commandMenuOpen)
+      }
+    }
+
+    window.addEventListener('keydown', toggleCommandMenu)
+
+    return () => window.removeEventListener('keydown', toggleCommandMenu)
+  }, [])
 
   const hasTableOfContents =
     props.toc !== undefined &&
@@ -78,6 +92,11 @@ const HomeLayout: FC<Props> = (props: Props) => {
             <TableOfContents toc={props.toc} video={props.meta.video} />
           </div>
         )}
+        <CommandMenuV2
+          isOpen={commandMenuOpen}
+          setIsOpen={setCommandMenuOpen}
+          lists={INITIAL_ITEMS}
+        />
       </LayoutMainContent>
     </>
   )
