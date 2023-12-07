@@ -1,9 +1,10 @@
-import { FunctionComponent, memo, useMemo, useRef, useState } from 'react'
+import { FunctionComponent, Key, memo, useEffect, useMemo, useRef, useState } from 'react'
 import { CommandList, DocsSearch } from './Command.utils'
 
 export const INITIAL_ITEMS: CommandList[] = [
   {
     heading: 'Search',
+    displayBehavior: 'forceMount',
     items: [
       {
         label: 'Docs search',
@@ -18,6 +19,14 @@ export const INITIAL_ITEMS: CommandList[] = [
     items: [
       {
         label: 'Go to support',
+      },
+    ],
+  },
+  {
+    heading: 'Utilities',
+    items: [
+      {
+        label: 'Get API keys',
         displayBehavior: 'whenMatch',
       },
     ],
@@ -154,10 +163,16 @@ function filterByDisplayBehavior(lists: AnnotatedCommandList[]) {
 }
 
 function filterLists(lists: AnnotatedCommandList[], search: string) {
+  const totalItems = lists.reduce((totalNumber, list) => totalNumber + list.items.length, 0)
+
   if (search) {
-    return filterBySearch(lists, search)
+    const result = filterBySearch(lists, search)
+    result.totalItems = totalItems
+    return result
   } else {
-    return filterByDisplayBehavior(lists)
+    const result = filterByDisplayBehavior(lists)
+    result.totalItems = totalItems
+    return result
   }
 }
 
@@ -167,7 +182,7 @@ export function useCommandSearch(initialLists: CommandList[]) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(lists.length ? 0 : null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { displayedItems, displayedLists } = useMemo(
+  const { totalItems, displayedItems, displayedLists } = useMemo(
     () => filterLists(lists, search),
     [lists, search]
   )
@@ -176,33 +191,87 @@ export function useCommandSearch(initialLists: CommandList[]) {
     setLists(annotateLists(updatedList))
   }
 
-  function safeSetSelectedIndex(index: number) {
-    if (displayedItems.size === 0) {
-      setSelectedIndex(null)
-    } else if (index >= 0 && index < displayedItems.size) {
-      setSelectedIndex(index)
-    } else {
-      setSelectedIndex(0)
+  function getFirst() {
+    let start = 0
+    while (start < totalItems) {
+      if (displayedItems.has(start)) {
+        return start
+      }
+      start++
     }
+    return null
   }
 
-  function selectPrior() {
+  function getLast() {
+    let end = totalItems - 1
+    while (end >= 0) {
+      if (displayedItems.has(end)) {
+        return end
+      }
+      end--
+    }
+    return null
+  }
+
+  function getPrevious() {
     if (selectedIndex === null) {
-      return
+      return null
     }
-    safeSetSelectedIndex(selectedIndex === 0 ? displayedItems.size - 1 : selectedIndex - 1)
+    let curr = selectedIndex === 0 ? totalItems - 1 : selectedIndex - 1
+    while (curr >= 0) {
+      if (displayedItems.has(curr)) {
+        return curr
+      }
+      curr--
+    }
+    return getLast()
   }
 
-  function selectNext() {
+  function getNext() {
     if (selectedIndex === null) {
-      return
+      return null
     }
-    safeSetSelectedIndex(selectedIndex === displayedItems.size - 1 ? 0 : selectedIndex + 1)
+    let curr = selectedIndex === totalItems - 1 ? 0 : selectedIndex + 1
+    while (curr < totalItems) {
+      if (displayedItems.has(curr)) {
+        return curr
+      }
+      curr++
+    }
+    return getFirst()
   }
 
-  function selectFirst() {
-    safeSetSelectedIndex(0)
-  }
+  useEffect(() => {
+    function keyHandler(evt: KeyboardEvent) {
+      if (document.activeElement !== inputRef.current) {
+        return
+      }
+
+      switch (evt.key) {
+        // Need to account for IME
+        case 'ArrowUp':
+          if (evt.metaKey || evt.ctrlKey) {
+            setSelectedIndex(getFirst())
+          } else {
+            setSelectedIndex(getPrevious())
+          }
+          break
+        case 'ArrowDown':
+          if (evt.metaKey || evt.ctrlKey) {
+            setSelectedIndex(getLast())
+          } else {
+            setSelectedIndex(getNext())
+          }
+          break
+        default:
+          return
+      }
+    }
+
+    window.addEventListener('keydown', keyHandler)
+
+    return () => window.removeEventListener('keydown', keyHandler)
+  }, [getFirst, getPrevious, getNext, getLast])
 
   return {
     search: {
@@ -218,9 +287,6 @@ export function useCommandSearch(initialLists: CommandList[]) {
     },
     selection: {
       selectedIndex,
-      selectPrior,
-      selectNext,
-      selectFirst,
     },
   }
 }
