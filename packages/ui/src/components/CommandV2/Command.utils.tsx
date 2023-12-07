@@ -76,7 +76,7 @@ function CommandItem({ item, selected }) {
       aria-selected={selected}
       className="cursor-default select-none items-center rounded-md text-sm group py-3 text-foreground-light relative flex px-2 aria-selected:bg-overlay-hover/80 aria-selected:backdrop-filter aria-selected:backdrop-blur-md data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
     >
-      {item.label}
+      {item.type === 'button' ? <button onClick={item.onClick}>{item.label}</button> : item.label}
     </li>
   )
 }

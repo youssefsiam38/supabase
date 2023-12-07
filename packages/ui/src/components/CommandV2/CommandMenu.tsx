@@ -23,7 +23,7 @@ export function CommandMenu({ isOpen }: { isOpen: boolean }) {
       )}
     >
       <CommandPagesProvider>
-        <CommandMenuInner />
+        <CommandMenuInner isOpen={isOpen} />
       </CommandPagesProvider>
     </Modal>
   )
@@ -63,8 +63,20 @@ function SmoothHeightWrapper({ heightKey, className, children }) {
   )
 }
 
-function CommandMenuInner() {
-  const { commandLists } = useCommandPagesContext()
+function CommandMenuInner({ isOpen }: { isOpen: boolean }) {
+  const { commandLists, pageBack } = useCommandPagesContext()
+
+  useEffect(() => {
+    function handleEscape(evt: KeyboardEvent) {
+      if (isOpen && evt.key === 'Escape') {
+        pageBack()
+      }
+    }
+
+    window.addEventListener('keydown', handleEscape)
+
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [pageBack])
 
   return (
     <CommandSearchProvider commands={commandLists ?? []}>

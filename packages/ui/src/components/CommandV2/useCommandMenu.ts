@@ -1,51 +1,29 @@
-import { FunctionComponent, Key, memo, useEffect, useMemo, useRef, useState } from 'react'
+import { FunctionComponent, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CommandList, DocsSearch } from './Command.utils'
-
-export const INITIAL_ITEMS: CommandList[] = [
-  {
-    heading: 'Search',
-    displayBehavior: 'forceMount',
-    items: [
-      {
-        label: 'Docs search',
-      },
-      {
-        label: 'Supabase AI',
-      },
-    ],
-  },
-  {
-    heading: 'Support',
-    items: [
-      {
-        label: 'Go to support',
-      },
-    ],
-  },
-  {
-    heading: 'Utilities',
-    items: [
-      {
-        label: 'Get API keys',
-        displayBehavior: 'whenMatch',
-      },
-    ],
-  },
-]
-
-export enum COMMAND_PAGE {
-  ROOT = 'Home',
-  DOCS_SEARCH = 'Docs search',
-}
+import { ApiKeys } from './pages/apiKeys'
+import { COMMAND_PAGE } from './pages/constants'
+import { generateStudioHomeCommands } from './pages/StudioHome'
 
 // Must have at least root page
-type CommandPages = [COMMAND_PAGE.ROOT, ...COMMAND_PAGE[]]
+type CommandPages = [COMMAND_PAGE, ...COMMAND_PAGE[]]
 
-interface CommandItem {
+interface CommandItemLink {
+  type: 'link'
+  href: string
+}
+
+interface CommandItemButton {
+  type: 'button'
+  onClick: (evt: MouseEvent) => void
+}
+
+interface CommandItemCommon {
   itemIndex?: number
   label: string
   displayBehavior?: 'forceMount' | 'whenMatch'
 }
+
+type CommandItem = CommandItemCommon & (CommandItemLink | CommandItemButton)
 
 interface CommandList {
   listIndex?: number
@@ -62,28 +40,76 @@ export type PublicCommandList = Omit<CommandList, 'listIndex' | 'items'> & {
   items: Omit<CommandItem, 'itemIndex'>[]
 }
 
-const commandPageContents: Record<
-  COMMAND_PAGE,
-  { Component: FunctionComponent; commands?: PublicCommandList[] }
-> = {
-  [COMMAND_PAGE.ROOT]: { Component: memo(CommandList), commands: INITIAL_ITEMS },
-  [COMMAND_PAGE.DOCS_SEARCH]: { Component: memo(DocsSearch) },
-}
+export function useCommandPage({
+  initialPage = COMMAND_PAGE.STUDIO_HOME,
+}: { initialPage?: COMMAND_PAGE } = {}) {
+  const [pages, setPages] = useState<CommandPages>([initialPage])
 
-export function useCommandPage() {
-  const [pages, setPages] = useState<CommandPages>([COMMAND_PAGE.ROOT])
+  const pageBack = useCallback(() => {
+    setPages((pages) => (pages.length === 1 ? pages : (pages.slice(0, -1) as CommandPages)))
+  }, [])
 
-  function pageBack() {
-    if (pages.length === 1) {
-      // Nowhere to page back to if we're at root
-      return
+  const pageForward = useCallback((newPage: COMMAND_PAGE) => {
+    setPages((pages) => [...pages, newPage])
+  }, [])
+
+  const allCommands: CommandList[] = useMemo(
+    () => [
+      {
+        heading: 'Search',
+        displayBehavior: 'forceMount',
+        items: [
+          {
+            label: 'Docs search',
+            type: 'button',
+            onClick: () => pageForward(COMMAND_PAGE.DOCS_SEARCH),
+          },
+          {
+            label: 'Supabase AI',
+            type: 'button',
+            onClick: () => {},
+          },
+        ],
+      },
+      {
+        heading: 'Support',
+        items: [
+          {
+            label: 'Go to support',
+            type: 'link',
+            href: '',
+          },
+        ],
+      },
+      {
+        heading: 'Utilities',
+        items: [
+          {
+            label: 'Get API keys',
+            displayBehavior: 'whenMatch',
+            type: 'button',
+            onClick: () => pageForward(COMMAND_PAGE.API_KEYS),
+          },
+        ],
+      },
+    ],
+    [pageForward]
+  )
+
+  const commandPageContents: Record<
+    COMMAND_PAGE,
+    { Component: FunctionComponent; commands?: PublicCommandList[] }
+  > = useMemo(() => {
+    return {
+      [COMMAND_PAGE.STUDIO_HOME]: {
+        Component: memo(CommandList),
+        commands: generateStudioHomeCommands({ pageForward }),
+      },
+      [COMMAND_PAGE.DOCS_HOME]: { Component: memo(CommandList), commands: allCommands },
+      [COMMAND_PAGE.DOCS_SEARCH]: { Component: memo(DocsSearch) },
+      [COMMAND_PAGE.API_KEYS]: { Component: memo(ApiKeys) },
     }
-    setPages(pages.slice(0, -1) as CommandPages) // Can cast here since we've enforced length check above
-  }
-
-  function pageForward(newPage: COMMAND_PAGE) {
-    setPages([...pages, newPage])
-  }
+  }, [allCommands])
 
   const currentPage = pages[pages.length - 1]
 
@@ -93,7 +119,6 @@ export function useCommandPage() {
 }
 
 function annotateLists(lists: CommandList[]) {
-  console.log('annotating list')
   let itemIndex = 0
 
   lists.forEach((list, listIndex) => {
@@ -102,11 +127,13 @@ function annotateLists(lists: CommandList[]) {
       item.itemIndex = itemIndex++
     })
   })
-  console.log(lists)
   return lists as unknown as AnnotatedCommandList[]
 }
 
-function match(element: CommandList | CommandItem, search: string) {
+function match(element: AnnotatedCommandList | CommandItem, search: string, minMatch?: number) {
+  if (minMatch && search.length < minMatch) {
+    return false
+  }
   const label = 'heading' in element ? element.heading : element.label
   return label.toLowerCase().includes(search.toLowerCase())
 }
@@ -116,17 +143,20 @@ function filterBySearch(lists: AnnotatedCommandList[], search: string) {
   const displayedLists = new Set<number>()
 
   lists.forEach((list) => {
-    if (list.displayBehavior === 'forceMount' || match(list, search)) {
+    if (list.displayBehavior === 'forceMount' || match(list, search, 3)) {
       displayedLists.add(list.listIndex)
       list.items.forEach((item) => {
-        if (item.displayBehavior !== 'whenMatch' || match(item, search)) {
+        if (item.displayBehavior !== 'whenMatch' || match(item, search, 3)) {
           displayedItems.add(item.itemIndex)
         }
       })
     } else {
       let displayList = false
       list.items.forEach((item) => {
-        if (item.displayBehavior === 'forceMount' || match(item, search)) {
+        if (
+          item.displayBehavior === 'forceMount' ||
+          match(item, search, item.displayBehavior === 'whenMatch' ? 3 : 0)
+        ) {
           displayedItems.add(item.itemIndex)
           displayList = true
         }
@@ -162,17 +192,23 @@ function filterByDisplayBehavior(lists: AnnotatedCommandList[]) {
   return { displayedItems, displayedLists }
 }
 
+interface ListMeta {
+  totalItems?: number
+  displayedItems: Set<number>
+  displayedLists: Set<number>
+}
+
 function filterLists(lists: AnnotatedCommandList[], search: string) {
   const totalItems = lists.reduce((totalNumber, list) => totalNumber + list.items.length, 0)
 
   if (search) {
-    const result = filterBySearch(lists, search)
+    const result: ListMeta = filterBySearch(lists, search)
     result.totalItems = totalItems
-    return result
+    return result as Required<ListMeta>
   } else {
-    const result = filterByDisplayBehavior(lists)
+    const result: ListMeta = filterByDisplayBehavior(lists)
     result.totalItems = totalItems
-    return result
+    return result as Required<ListMeta>
   }
 }
 
