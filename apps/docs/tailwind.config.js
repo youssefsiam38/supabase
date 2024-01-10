@@ -8,6 +8,7 @@ module.exports = config({
     './layouts/**/*.tsx',
     './src/**/*.{ts,tsx,mdx}',
     './docs/**/*.{tsx,mdx}',
+    './app/**/*.{tsx,mdx}',
   ],
   plugins: [
     function ({ addUtilities, addVariant }) {
