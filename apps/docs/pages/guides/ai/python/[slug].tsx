@@ -71,9 +71,11 @@ export default function PythonClientDocs({ source, meta }: PythonClientDocsProps
  * Fetch markdown from external repo and transform links
  */
 export const getStaticProps: GetStaticProps<PythonClientDocsProps> = async ({ params }) => {
+  // @ts-ignore
   const page = pageMap.find(({ slug }) => slug === params.slug)
 
   if (!page) {
+    // @ts-ignore
     throw new Error(`No page mapping found for slug '${params.slug}'`)
   }
 

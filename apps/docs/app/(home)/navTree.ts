@@ -6,11 +6,13 @@ export const HOMEPAGE_MENU_ITEMS: MenuList = [
     pages: [
       {
         label: 'Home',
+        level: 'home',
         icon: 'home',
         href: '/',
       },
       {
         label: 'Getting Started',
+        level: 'gettingstarted',
         icon: 'getting-started',
         href: '/guides/getting-started',
       },
@@ -21,31 +23,37 @@ export const HOMEPAGE_MENU_ITEMS: MenuList = [
     pages: [
       {
         label: 'Database',
+        level: 'database',
         icon: 'database',
         href: '/guides/database',
       },
       {
         label: 'Auth',
+        level: 'auth',
         icon: 'auth',
         href: '/guides/auth',
       },
       {
         label: 'Storage',
+        level: 'storage',
         icon: 'storage',
         href: '/guides/storage',
       },
       {
         label: 'Edge Functions',
+        level: 'functions',
         icon: 'edge-functions',
         href: '/guides/functions',
       },
       {
         label: 'Realtime',
+        level: 'realtime',
         icon: 'realtime',
         href: '/guides/realtime',
       },
       {
         label: 'AI & Vectors',
+        level: 'ai',
         icon: 'ai',
         href: '/guides/ai',
       },
@@ -56,15 +64,15 @@ export const HOMEPAGE_MENU_ITEMS: MenuList = [
     pages: [
       {
         label: 'REST',
+        level: 'api',
         icon: 'rest',
         href: '/guides/api',
-        level: 'api',
       },
       {
         label: 'GraphQL',
+        level: 'graphql',
         icon: 'graphql',
         href: '/guides/graphql',
-        level: 'graphql',
       },
     ],
   },
@@ -73,21 +81,21 @@ export const HOMEPAGE_MENU_ITEMS: MenuList = [
     pages: [
       {
         label: 'Local Dev / CLI',
+        level: 'reference_javascript',
         icon: 'dev-cli',
         href: '/guides/cli',
-        level: 'reference_javascript',
       },
       {
         label: 'Platform',
+        level: 'platform',
         icon: 'platform',
         href: '/guides/platform',
-        level: 'platform',
       },
       {
         label: 'Self-Hosting',
+        level: 'self_hosting',
         icon: 'self-hosting',
         href: '/guides/self-hosting',
-        level: 'self_hosting',
       },
     ],
   },
@@ -96,42 +104,42 @@ export const HOMEPAGE_MENU_ITEMS: MenuList = [
     pages: [
       {
         label: 'JavaScript',
+        level: 'reference_javascript',
         icon: 'reference-javascript',
         href: '/reference/javascript/introduction',
-        level: 'reference_javascript',
       },
       {
         label: 'Flutter',
+        level: 'reference_dart',
         icon: 'reference-dart',
         href: '/reference/dart/introduction',
-        level: 'reference_dart',
       },
       {
         label: 'Python',
+        level: 'reference_python',
         icon: 'reference-python',
         href: '/reference/python/introduction',
-        level: 'reference_python',
         community: true,
       },
       {
         label: 'C#',
+        level: 'reference_csharp',
         icon: 'reference-csharp',
         href: '/reference/csharp/introduction',
-        level: 'reference_csharp',
         community: true,
       },
       {
         label: 'Swift',
+        level: 'reference_swift',
         icon: 'reference-swift',
         href: '/reference/swift/introduction',
-        level: 'reference_swift',
         community: true,
       },
       {
         label: 'Kotlin',
+        level: 'reference_kotlin',
         icon: 'reference-kotlin',
         href: '/reference/kotlin/introduction',
-        level: 'reference_kotlin',
         community: true,
       },
     ],
@@ -141,28 +149,28 @@ export const HOMEPAGE_MENU_ITEMS: MenuList = [
     pages: [
       {
         label: 'CLI Commands',
+        level: 'reference_javascript',
         icon: 'reference-cli',
         href: '/reference/cli/introduction',
-        level: 'reference_javascript',
       },
       {
         label: 'Management API',
+        level: 'reference_javascript',
         icon: 'reference-api',
         href: '/reference/api/introduction',
-        level: 'reference_javascript',
       },
       {
         label: 'Guides and Examples',
+        level: 'resources',
         icon: 'resources',
         href: '/guides/resources',
-        level: 'resources',
       },
       {
         label: 'Integrations',
+        level: 'integrations',
         icon: 'integrations',
         hasLightIcon: true,
         href: 'https://supabase.com/partners/integrations',
-        level: 'integrations',
       },
     ],
   },

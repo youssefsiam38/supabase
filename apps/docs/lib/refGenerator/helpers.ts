@@ -34,6 +34,7 @@ export function generateParameters(tsDefinition: any) {
 
   // Functions can have multiple signatures - select the last one since that
   // tends to be closer to primitive types (citation needed).
+  // @ts-ignore
   const paramDefinitions: TsDoc.TypeDefinition[] = functionDeclaration.signatures.at(-1).parameters
   if (!paramDefinitions) return ''
 
@@ -100,6 +101,7 @@ function recurseThroughParams(paramDefinition: any) {
     //throw new Error(`unexpected param type`)
   }
 
+  // @ts-ignore
   if (children) {
     const properties = children
       .sort((a, b) => a.name?.localeCompare(b.name)) // first alphabetical

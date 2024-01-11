@@ -11,7 +11,7 @@ import {
   IconSun,
 } from 'ui'
 import { useState } from 'react'
-import { ThemeValue, themeValues } from '~/stores/theme.shared'
+import { ThemeValue, themeValues } from '~/constants/theme.shared'
 import { useTheme } from './Providers.client'
 
 export function ThemeToggle() {

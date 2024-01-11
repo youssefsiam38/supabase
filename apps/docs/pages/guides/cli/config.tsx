@@ -9,13 +9,16 @@ import { CodeBlock } from 'ui'
 // Parameters are grouped on the page by tag
 const tocList = []
 const content = specFile.info.tags.map((tag) => {
+  // @ts-ignore
   tocList.push({ text: tag.title, link: `${tag.id}-config`, level: 2 })
   return (
     <div>
       <Heading tag="h2">{tag.title} Config</Heading>
       {specFile.parameters
+        // @ts-ignore
         .filter((param: Parameter) => param.tags[0] === tag.id)
         .map((parameter: Parameter) => {
+          // @ts-ignore
           tocList.push({ text: parameter.id, link: `#${parameter.id}`, level: 3 })
           return <Info parameter={parameter} />
         })}
@@ -74,6 +77,7 @@ function Info({ parameter }: { parameter: Parameter }) {
                   <tr>
                     <td>{parameter.id}</td>
                     <td>{parameter.default ? parameter.default.toString() : 'None'}</td>
+                    {/* @ts-ignore */}
                     <td>{parameter.required.toString()}</td>
                   </tr>
                 </tbody>

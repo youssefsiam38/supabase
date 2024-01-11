@@ -1,20 +1,32 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { cn } from 'ui'
-import { useSnapshot } from 'valtio'
-import { mobileMenuStore } from '~/stores/mobileMenu'
 import { NavigationMenu } from './NavigationMenu'
 import { MenuList } from './navTypes'
+import { useSnapshot } from 'valtio'
+import { menuState } from '~/stores/navMenu'
 
-export function NavContainer({ header, navItems }: { header: ReactNode; navItems: MenuList }) {
-  const { isOpen: isMobileMenuOpen } = useSnapshot(mobileMenuStore)
+export function NavContainer({
+  header,
+  navItems,
+  menuId,
+}: {
+  header: ReactNode
+  navItems: MenuList
+  menuId: string
+}) {
+  const { menuMobileOpen, setMenuLevelId } = useSnapshot(menuState)
+
+  useEffect(() => {
+    setMenuLevelId(menuId)
+  }, [menuId, setMenuLevelId])
 
   return (
     <div
       className={cn(
         'absolute lg:relative',
-        isMobileMenuOpen ? 'w-[75%] sm:w-[50%] md:w-[33%] left-0' : 'w-0 -left-[280px]',
+        menuMobileOpen ? 'w-[75%] sm:w-[50%] md:w-[33%] left-0' : 'w-0 -left-[280px]',
         'lg:w-[420px] lg:left-0',
         'top-0',
         'ml-0',

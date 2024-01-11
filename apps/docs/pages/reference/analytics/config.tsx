@@ -29,6 +29,7 @@ export default function Config(props) {
             </div>
             {TAGS.map((tag) =>
               specFile.parameters
+                // @ts-ignore
                 .filter((param: Parameter) => param.tags[0] === tag)
                 .map((parameter: Parameter, index) => (
                   <div>
@@ -47,6 +48,7 @@ export default function Config(props) {
                               </p>
                               <div className="grid gap-2">
                                 <div className="flex gap-2">
+                                  {/* @ts-ignore */}
                                   Required: <code>{parameter.required.toString()}</code>
                                 </div>
                                 <div className="flex gap-2">

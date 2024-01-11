@@ -27,8 +27,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const [supabase] = useState(() =>
     IS_PLATFORM
       ? createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
         )
       : undefined
   )
@@ -145,6 +145,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   const AuthContainer = (props) => {
     return IS_PLATFORM ? (
+      // @ts-ignore
       <SessionContextProvider supabaseClient={supabase}>
         <AuthProvider>{props.children}</AuthProvider>
       </SessionContextProvider>

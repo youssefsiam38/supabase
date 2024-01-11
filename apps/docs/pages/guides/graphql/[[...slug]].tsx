@@ -124,6 +124,7 @@ export default function PGGraphQLDocs({ source, meta }: PGGraphQLDocsProps) {
  * Fetch markdown from external repo and transform links
  */
 export const getStaticProps: GetStaticProps<PGGraphQLDocsProps> = async ({ params }) => {
+  // @ts-ignore
   const [slug] = params.slug ?? []
   const page = pageMap.find((page) => page.slug === slug)
 

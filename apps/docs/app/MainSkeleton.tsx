@@ -1,10 +1,12 @@
 import { PropsWithChildren } from 'react'
+import { MobileHeader, MobileMenuBackdrop } from '../componentsV2/navigation/MobileMenu.client'
 import { NavContainer } from '../componentsV2/navigation/NavContainer'
 import { NavHeader } from '../componentsV2/navigation/NavHeader'
 import { MenuList } from '~/componentsV2/navigation/navTypes'
 import { MainContainer, TopNavBarLogo } from './MainSkeleton.client'
 import Link from 'next/link'
 import { Button, IconGitHub } from 'ui'
+import { Footer } from './Footer'
 import { ThemeToggle } from './ThemeToggle.client'
 
 export function TopNavBar() {
@@ -19,7 +21,7 @@ export function TopNavBar() {
         </div>
 
         <div className="flex items-center gap-6">
-          Search must be separate client because needs hook
+          Search needs to be rewritten beause it uses old router...
         </div>
         <div className="hidden lg:flex grow items-center justify-end gap-3">
           <Button type="text" asChild>
@@ -45,15 +47,34 @@ export function TopNavBar() {
   )
 }
 
-export function MainSkeleton({ children, navItems }: PropsWithChildren<{ navItems: MenuList }>) {
+export function MainSkeleton({
+  children,
+  menuId,
+  navItems,
+}: PropsWithChildren<{ menuId: string; navItems: MenuList }>) {
   return (
     <div className="flex flex-row h-screen">
-      <NavContainer header={<NavHeader />} navItems={navItems} />
+      <NavContainer header={<NavHeader />} menuId={menuId} navItems={navItems} />
       <MainContainer>
         <div className="lg:sticky top-0 z-10 overflow-hidden">
           <TopNavBar />
         </div>
-        {children}
+        <div
+          className={[
+            'sticky z-10 top-0',
+            'transition-all',
+            'backdrop-blur backdrop-filter bg-background',
+          ].join(' ')}
+        >
+          <div className={['lg:hidden', 'px-5', 'border-b z-10'].join(' ')}>
+            <MobileHeader />
+          </div>
+        </div>
+        <div className="grow">
+          {children}
+          <Footer />
+        </div>
+        <MobileMenuBackdrop />
       </MainContainer>
     </div>
   )

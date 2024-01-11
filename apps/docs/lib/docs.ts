@@ -70,7 +70,7 @@ function walk(dir: string) {
   const list = fs.readdirSync(dir)
   list.forEach(function (file) {
     file = dir + '/' + file
-    let slugs = []
+    let slugs: string[] = []
 
     fs.readdirSync(dir).forEach((file) => {
       let absolute = join(dir, file)

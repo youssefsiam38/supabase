@@ -44,15 +44,17 @@ const Layout: FC<Props> = (props: Props) => {
         openGraph={{
           url: `https://supabase.com/docs${asPath}`,
           type: 'article',
-          videos: props.meta?.video && [
-            {
-              // youtube based video meta
-              url: props.meta?.video,
-              width: 640,
-              height: 385,
-              type: 'application/x-shockwave-flash',
-            },
-          ],
+          videos: props.meta?.video
+            ? [
+                {
+                  // youtube based video meta
+                  url: props.meta?.video,
+                  width: 640,
+                  height: 385,
+                  type: 'application/x-shockwave-flash',
+                },
+              ]
+            : undefined,
           article: {
             publishedTime: new Date().toISOString(),
             modifiedTime: new Date().toISOString(),

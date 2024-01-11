@@ -1,5 +1,6 @@
 export type MenuItem = {
   label: string
+  level?: string
   href: `/${string}` | `https://${string}`
   icon?: string
   hasLightIcon?: boolean

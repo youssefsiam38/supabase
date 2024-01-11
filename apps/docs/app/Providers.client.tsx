@@ -2,8 +2,8 @@
 
 import Cookies from 'js-cookie'
 import { PropsWithChildren, createContext, useContext, useState } from 'react'
-import { COOKIES } from '~/stores/cookies'
-import { ThemeValue } from '~/stores/theme.shared'
+import { COOKIES } from '~/constants/cookies'
+import { ThemeValue } from '~/constants/theme.shared'
 
 const ThemeContext = createContext<{
   theme: ThemeValue

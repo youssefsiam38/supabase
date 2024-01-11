@@ -23,12 +23,14 @@ interface RefSectionHandlerProps {
 const RefSectionHandler = (props: RefSectionHandlerProps) => {
   const router = useRouter()
 
-  const [slug] = router.query.slug
+  const slug = router.query.slug?.[0]
 
   // When user lands on a url like http://supabase.com/docs/reference/javascript/sign-up
   // find the #sign-up element and scroll to that
   useEffect(() => {
-    document.getElementById(slug)?.scrollIntoView()
+    if (slug) {
+      document.getElementById(slug)?.scrollIntoView()
+    }
   }, [slug])
 
   useEffect(() => {
@@ -47,7 +49,7 @@ const RefSectionHandler = (props: RefSectionHandlerProps) => {
   function getPageTitle() {
     switch (props.type) {
       case 'client-lib':
-        return props.spec.info.title
+        return props?.spec?.info.title
       case 'cli':
         return 'Supabase CLI reference'
       case 'api':

@@ -3,9 +3,8 @@
 import Image from 'next/image'
 import { PropsWithChildren } from 'react'
 import { cn } from 'ui'
-import { useSnapshot } from 'valtio'
-import { mobileMenuStore } from '~/stores/mobileMenu'
 import { useTheme } from './Providers.client'
+import { useMenuMobileOpen } from '~/stores/navMenu'
 
 export function TopNavBarLogo() {
   const { theme } = useTheme()
@@ -23,7 +22,7 @@ export function TopNavBarLogo() {
 }
 
 export function MainContainer({ children }: PropsWithChildren) {
-  const { isOpen: isMobileMenuOpen } = useSnapshot(mobileMenuStore)
+  const isMobileMenuOpen = useMenuMobileOpen()
 
   return (
     <div
