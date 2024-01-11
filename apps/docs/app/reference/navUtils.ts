@@ -1,5 +1,5 @@
 import { flow } from 'lodash'
-import { MenuItem } from '~/componentsV2/navigation/navTypes'
+import { MenuList } from '~/componentsV2/navigation/navTypes'
 import commonClientLibSections from '~/spec/common-client-libs-sections.json'
 
 /******************************************************************************
@@ -32,7 +32,7 @@ function clone<T>(struct: T) {
   return structuredClone(struct)
 }
 
-function createRemoveExcluder(excludedName: string) {
+export function createRemoveExcluder(excludedName: string) {
   return function removeExcludes(specSections: CommonClientSpecSections) {
     for (let i = 0; i < specSections.length; i++) {
       const section = specSections[i]
@@ -87,7 +87,7 @@ function collectCategories(specSections: CommonClientSpecSections) {
 
 function createReformatter(pagePath: `/${string}`) {
   // Some ts-ignoring needed in this function because it mutates
-  // a CategorizedSection[] to a MenuItem[], so the typing is
+  // a CategorizedSection[] to a MenuList, so the typing is
   // a hybrid somewhere in the middle
   return function reformat(categoryColl: CategorizedSection[]) {
     for (const category of categoryColl) {
@@ -108,7 +108,7 @@ function createReformatter(pagePath: `/${string}`) {
       category.pages = newPages
     }
 
-    return categoryColl as unknown as MenuItem[]
+    return categoryColl as unknown as MenuList
   }
 }
 

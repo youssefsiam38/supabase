@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react'
 import { MobileHeader, MobileMenuBackdrop } from '../componentsV2/navigation/MobileMenu.client'
+import { NavStyle } from '~/componentsV2/navigation/NavigationMenu'
 import { NavContainer } from '../componentsV2/navigation/NavContainer'
 import { NavHeader } from '../componentsV2/navigation/NavHeader'
 import { MenuList } from '~/componentsV2/navigation/navTypes'
@@ -50,11 +51,21 @@ export function TopNavBar() {
 export function MainSkeleton({
   children,
   menuId,
+  navStyle,
   navItems,
-}: PropsWithChildren<{ menuId: string; navItems: MenuList }>) {
+}: PropsWithChildren<{
+  menuId: string
+  navStyle?: NavStyle
+  navItems: MenuList
+}>) {
   return (
     <div className="flex flex-row h-screen">
-      <NavContainer header={<NavHeader />} menuId={menuId} navItems={navItems} />
+      <NavContainer
+        header={<NavHeader />}
+        menuId={menuId}
+        navStyle={navStyle}
+        navItems={navItems}
+      />
       <MainContainer>
         <div className="lg:sticky top-0 z-10 overflow-hidden">
           <TopNavBar />

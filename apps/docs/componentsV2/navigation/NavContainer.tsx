@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect } from 'react'
 import { cn } from 'ui'
-import { NavigationMenu } from './NavigationMenu'
+import { NavStyle, NavigationMenu } from './NavigationMenu'
 import { MenuList } from './navTypes'
 import { useSnapshot } from 'valtio'
 import { menuState } from '~/stores/navMenu'
@@ -10,10 +10,12 @@ import { menuState } from '~/stores/navMenu'
 export function NavContainer({
   header,
   navItems,
+  navStyle,
   menuId,
 }: {
   header: ReactNode
   navItems: MenuList
+  navStyle?: NavStyle
   menuId: string
 }) {
   const { menuMobileOpen, setMenuLevelId } = useSnapshot(menuState)
@@ -62,7 +64,7 @@ export function NavContainer({
             'lg:opacity-100 lg:visible',
           ].join(' ')}
         >
-          <NavigationMenu navItems={navItems} />
+          <NavigationMenu navStyle={navStyle} navItems={navItems} />
         </div>
       </div>
     </div>
