@@ -15,9 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const theme = getThemeOrDefault()
 
   return (
-    <html lang="en">
+    <html lang="en" data-theme={theme}>
       <ThemeProvider initialTheme={theme}>
-        <body data-theme={theme}>
+        <body>
           <main>{children}</main>
         </body>
       </ThemeProvider>

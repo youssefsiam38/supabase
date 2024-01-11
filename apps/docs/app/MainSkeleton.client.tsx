@@ -14,6 +14,7 @@ export function TopNavBarLogo() {
     <Image
       className="cursor-pointer"
       src={theme === 'dark' ? '/docs/supabase-dark.svg' : '/docs/supabase-light.svg'}
+      loading="eager"
       width={96}
       height={24}
       alt="Supabase Logo"

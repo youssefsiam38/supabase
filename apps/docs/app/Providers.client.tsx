@@ -26,7 +26,8 @@ export function ThemeProvider({
 
   function setTheme(theme: ThemeValue) {
     _setTheme(theme)
-    document.body.dataset.theme = theme
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.setProperty('color-scheme', theme)
     Cookies.set(COOKIES.THEME_PREFERENCE, theme, { secure: true })
   }
 

@@ -1,10 +1,11 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
-import { cn } from 'ui'
-import { getThemeOrDefault } from '~/stores/theme.server'
+import { useTheme } from '~/app/Providers.client'
 
 export function NavHeader() {
-  const theme = getThemeOrDefault()
+  const { theme } = useTheme()
 
   return (
     <div className="hidden lg:block lg:h-auto bg-background pt-8">
