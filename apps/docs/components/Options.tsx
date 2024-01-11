@@ -1,3 +1,5 @@
+'use client'
+
 import { FC, PropsWithChildren, useState } from 'react'
 import { IconXCircle } from '~/../../packages/ui'
 

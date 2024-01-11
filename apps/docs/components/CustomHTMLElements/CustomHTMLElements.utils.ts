@@ -1,3 +1,5 @@
+'use client'
+
 // Check if heading has custom anchor first, before forming the anchor based on the title
 export const getAnchor = (text: any): string | undefined => {
   if (typeof text === 'object') {

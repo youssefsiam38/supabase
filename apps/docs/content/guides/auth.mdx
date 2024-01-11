@@ -1,13 +1,10 @@
-import Layout from '~/layouts/DefaultGuideLayout'
-import AuthProviders from '~/components/AuthProviders'
-
-export const meta = {
-  id: 'auth',
-  title: 'Auth',
-  description: 'Use Supabase to Authenticate and Authorize your users.',
-  subtitle: 'Use Supabase to authenticate and authorize your users.',
-  video: 'https://www.youtube.com/v/6ow_jW4epf8',
-}
+---
+  id: 'auth'
+  title: 'Auth'
+  description: 'Use Supabase to Authenticate and Authorize your users.'
+  subtitle: 'Use Supabase to authenticate and authorize your users.'
+  video: 'https://www.youtube.com/v/6ow_jW4epf8'
+---
 
 There are two parts to every Auth system:
 
@@ -149,7 +146,3 @@ When users sign up, Supabase assigns them a unique ID. You can reference this ID
     type="video/mp4"
   />
 </video>
-
-export const Page = ({ children }) => <Layout meta={meta} children={children} />
-
-export default Page

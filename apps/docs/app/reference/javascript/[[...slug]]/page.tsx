@@ -52,10 +52,10 @@ function FunctionComponent({ section }: { section: ICommonSection }) {
   )
 }
 
-export default function JavaScriptReference({ params: { slug } }: { params: { slug: string } }) {
+export default function JavaScriptReference({ params: { slug } }: { params: { slug: string[] } }) {
   return (
     <>
-      <ScrollHandler slug={slug} />
+      <ScrollHandler slug={slug[0]} />
       <article>
         <InnerLayout>
           {flattenedSections.map((section) => {

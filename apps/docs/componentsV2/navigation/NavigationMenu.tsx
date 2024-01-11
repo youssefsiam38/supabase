@@ -25,7 +25,12 @@ export function NavigationMenu({
                 ].join(' ')}
               >
                 {section.section && (
-                  <div className="font-mono uppercase text-xs text-foreground-lighter">
+                  <div
+                    className={[
+                      'font-mono uppercase text-xs',
+                      navStyle === 'spacious' ? 'text-foreground-lighter' : 'test-foreground',
+                    ].join(' ')}
+                  >
                     {section.section}
                   </div>
                 )}
