@@ -5,6 +5,7 @@ export type MenuItem = {
   icon?: string
   hasLightIcon?: boolean
   community?: boolean
+  pages?: MenuItem
 }
 
 type MenuSection = { section: string | null; pages: MenuItem[] }
