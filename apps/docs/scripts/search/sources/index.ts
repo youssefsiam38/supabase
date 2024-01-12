@@ -104,6 +104,7 @@ export async function fetchSources() {
     )
   ).map((discussion) => new GitHubDiscussionLoader('supabase/supabase', discussion).load())
 
+  // @ts-ignore -- Boolean filter takes care of it but TS doesn't catch that
   const sources: SearchSource[] = (
     await Promise.all([
       openApiReferenceSource,
@@ -117,7 +118,9 @@ export async function fetchSources() {
       ...githubDiscussionSources,
       ...guideSources,
     ])
-  ).flat()
+  )
+    .filter(Boolean)
+    .flat()
 
   return sources
 }

@@ -1,5 +1,5 @@
 import { flow } from 'lodash'
-import { MenuList } from '~/componentsV2/navigation/navTypes'
+import { MenuList, MenuItem } from '~/componentsV2/navigation/navTypes'
 import commonClientLibSections from '~/spec/common-client-libs-sections.json'
 
 /******************************************************************************

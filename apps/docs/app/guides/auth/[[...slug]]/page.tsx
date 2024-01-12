@@ -17,7 +17,7 @@ export default async function RemoteMdxPage({ params: { slug } }: { params: { sl
 
   try {
     const source = await readFile(fullPath, 'utf-8')
-    const { content, frontmatter } = await compileMDX({
+    const { content, frontmatter } = await compileMDX<{ title: string }>({
       source,
       components,
       options: { parseFrontmatter: true },

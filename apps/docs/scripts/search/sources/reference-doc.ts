@@ -29,6 +29,7 @@ export abstract class ReferenceLoader<SpecSection> extends BaseLoader {
     super(source, path)
   }
 
+  // @ts-ignore
   async load() {
     const specContents = await readFile(this.specFilePath, 'utf8')
     const refSectionsContents = await readFile(this.sectionsFilePath, 'utf8')
@@ -133,6 +134,7 @@ export class OpenApiReferenceLoader extends ReferenceLoader<enrichedOperation> {
     return generatedSpec.operations
   }
   matchSpecSection(operations: enrichedOperation[], id: string): enrichedOperation {
+    // @ts-ignore
     return operations.find((operation) => operation.operationId === id)
   }
 }
@@ -162,6 +164,7 @@ export class OpenApiReferenceSource extends ReferenceSource<enrichedOperation> {
 
   extractIndexedContent(): string {
     const { summary, description, operation, tags } = this.specSection
+    // @ts-ignore
     return `${this.meta.title}\n\n${summary}\n\n${description}\n\n${operation}\n\n${tags.join(
       ', '
     )}`
@@ -186,6 +189,7 @@ export class ClientLibReferenceLoader extends ReferenceLoader<IFunctionDefinitio
     return spec.functions
   }
   matchSpecSection(functionDefinitions: IFunctionDefinition[], id: string): IFunctionDefinition {
+    // @ts-ignore
     return functionDefinitions.find((functionDefinition) => functionDefinition.id === id)
   }
 }
@@ -234,6 +238,7 @@ export class CliReferenceLoader extends ReferenceLoader<CliCommand> {
     return spec.commands
   }
   matchSpecSection(cliCommands: CliCommand[], id: string): CliCommand {
+    // @ts-ignore
     return cliCommands.find((cliCommand) => cliCommand.id === id)
   }
 }

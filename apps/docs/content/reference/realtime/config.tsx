@@ -29,7 +29,7 @@ export default function Config(props) {
             </div>
             {TAGS.map((tag) =>
               specFile.parameters
-                .filter((param: Parameter) => param.tags[0] === tag)
+                .filter((param: Parameter) => param.tags?.[0] === tag)
                 .map((parameter: Parameter, index) => (
                   <div>
                     {index === 0 && <h2 className="text-xl capitalize">{tag} Settings</h2>}
@@ -47,7 +47,7 @@ export default function Config(props) {
                               </p>
                               <div className="grid gap-2">
                                 <div className="flex gap-2">
-                                  Required: <code>{parameter.required.toString()}</code>
+                                  Required: <code>{parameter.required?.toString()}</code>
                                 </div>
                                 <div className="flex gap-2">
                                   Default:

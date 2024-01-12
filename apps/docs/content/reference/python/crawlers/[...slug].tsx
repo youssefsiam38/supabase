@@ -7,13 +7,14 @@ import handleRefGetStaticPaths from '~/lib/mdx/handleRefStaticPaths'
 import handleRefStaticProps from '~/lib/mdx/handleRefStaticProps'
 import { useRouter } from 'next/router'
 import RefSEO from '~/components/reference/RefSEO'
+import { TypeSpec } from '~/components/reference/Reference.types'
 
 const sections = flattenSections(clientLibsCommonSections)
 const libraryPath = '/python'
 
 export default function PyReference(props) {
   const router = useRouter()
-  const slug = router.query.slug[0]
+  const slug = router.query.slug?.[0]
   const filteredSection = sections.filter((section) => section.id === slug)
 
   const pageTitle = filteredSection[0]?.title
@@ -27,7 +28,7 @@ export default function PyReference(props) {
       <RefSectionHandler
         sections={filteredSection}
         spec={spec}
-        typeSpec={typeSpec}
+        typeSpec={typeSpec as TypeSpec}
         pageProps={props}
         type="client-lib"
       />

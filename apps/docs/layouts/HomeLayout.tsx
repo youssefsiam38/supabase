@@ -5,7 +5,6 @@ import { useRouter } from 'next/router'
 import { FC } from 'react'
 import components from '~/components'
 import TableOfContents from '~/components/TableOfContents'
-import HomePageCover from '../components/HomePageCover'
 import { LayoutMainContent } from './DefaultLayout'
 
 interface Props {
@@ -63,7 +62,6 @@ const HomeLayout: FC<Props> = (props: Props) => {
           },
         }}
       />
-      <HomePageCover meta={props.meta} />
       <LayoutMainContent>
         <div className={['relative transition-all ease-out', 'duration-150 '].join(' ')}>
           <article className="prose max-w-none">

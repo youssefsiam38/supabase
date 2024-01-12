@@ -1,3 +1,4 @@
+import type { TypeSpec } from '~/components/reference/Reference.types'
 import clientLibsCommonSections from '~/spec/common-client-libs-sections.json'
 import typeSpec from '~/spec/enrichments/tsdoc_v2/combined.json'
 import spec from '~/spec/supabase_dart_v2.yml' assert { type: 'yml' }
@@ -13,7 +14,7 @@ const libraryPath = '/dart'
 
 export default function DartReference(props) {
   const router = useRouter()
-  const slug = router.query.slug[0]
+  const slug = router.query.slug?.[0]
   const filteredSection = sections.filter((section) => section.slug === slug)
 
   const pageTitle = filteredSection[0]?.title

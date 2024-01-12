@@ -1,11 +1,8 @@
 import Link from 'next/link'
-import { GlassPanel, IconBackground, IconPanel, IconPlay, TextLink } from 'ui'
-import DocsCoverLogo from '~/components/DocsCoverLogo'
-import { FrameworkPanel } from './FrameworkPanel'
+import { GlassPanel, IconBackground, IconPanel, TextLink } from 'ui'
 import {
   additionalResources,
   clientLibraries,
-  frameworks,
   migrationGuides,
   products,
   selfHostingOptions,

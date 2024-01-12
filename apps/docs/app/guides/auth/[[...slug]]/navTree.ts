@@ -17,9 +17,9 @@ export const authNavTree: MenuList = [
   {
     section: 'Quickstarts',
     pages: [
-      { label: 'Next.js', href: '/guides/auth/quickstarts/nextjs', pages: [] },
-      { label: 'React', href: '/guides/auth/quickstarts/react', pages: [] },
-      { label: 'React Native', href: '/guides/auth/quickstarts/react-native', pages: [] },
+      { label: 'Next.js', href: '/guides/auth/quickstarts/nextjs' },
+      { label: 'React', href: '/guides/auth/quickstarts/react' },
+      { label: 'React Native', href: '/guides/auth/quickstarts/react-native' },
     ],
   },
   {
