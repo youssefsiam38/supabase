@@ -95,7 +95,7 @@ Create a `utils/supabase` folder with a file for each type of client. Then copy 
       id="client-storage-cookies"
     >
 
-    The cookies option lets the Supabase client know to access the cookies, so it can read and write the user session data. To make `@supabase/ssr` framework-agnostic, the cookies methods aren't hard-coded. But you only need to set them up once. You can then reuse your utility functions whenever you need a Supabase client.
+    The cookies option lets the Supabase client know how to access the cookies, so it can read and write the user session data. To make `@supabase/ssr` framework-agnostic, the cookies methods aren't hard-coded. But you only need to set them up once. You can then reuse your utility functions whenever you need a Supabase client.
 
     </Accordion.Item>
 
@@ -438,46 +438,6 @@ export default async function PrivatePage() {
 
 </StepHikeCompact>
 
-## Congratulations
-
-You're done! To recap, you've successfully:
-
-- Called Supabase from a Server Action
-- Called Supabase from a Server Component
-- Set up a Supabase client utility to call Supabase from a Client Component
-- Set up middleware to automatically refresh the Supabase Auth session
-
-You can now use any Supabase features from your client or server code!
-
-## FAQ
-
-<Accordion
-  type="default"
-  openBehaviour="multiple"
-  chevronAlign="right"
-  justified
-  size="medium"
-  className="text-foreground-light mt-8 mb-6"
->
-  <div className="border-b pb-3">
-    <Accordion.Item
-      header={<span className="text-foreground">Which type of Supabase client should I use?</span>}
-      id="choosing-client"
-    >
-      In this tutorial, you wrote functions to create 3 different types of Supabase client: client, server, and action. Choose which one to use based on where your code is located:
-
-      | Code location | Type of Supabase client |
-      | - | - |
-      | Client Component | Client |
-      | Server Component | Server |
-      | Server Action | Action |
-      | Route Handler | Action |
-
-    </Accordion.Item>
-
-  </div>
-</Accordion>
-
 </TabPanel>
 
 <TabPanel id="pages" label="Pages Router">
@@ -566,7 +526,7 @@ Create a `utils/supabase` folder with a file for each type of client. Then copy 
       id="client-storage-cookies"
     >
 
-    The cookies option lets the Supabase client know to access the cookies, so it can read and write the user session data. To make `@supabase/ssr` framework-agnostic, the cookies methods aren't hard-coded. But you only need to set them up once. You can then reuse your utility functions whenever you need a Supabase client.
+    The cookies option lets the Supabase client know how to access the cookies, so it can read and write the user session data. To make `@supabase/ssr` framework-agnostic, the cookies methods aren't hard-coded. But you only need to set them up once. You can then reuse your utility functions whenever you need a Supabase client.
 
     </Accordion.Item>
 
@@ -750,15 +710,103 @@ Go to the [Auth templates](https://supabase.com/dashboard/project/ogikdpfuvdjclu
 
 <StepHikeCompact.Details title="Create a route handler for Auth confirmation">
 
-Create an API route at `api/auth/confirm`. When a user gets here from their email link, exchange their secure code for an Auth token.
+Create an API route at `api/auth/confirm`. When a user clicks their confirmation email link, exchange their secure code for an Auth token.
 
 Since this is an API route, use the Supabase client from `@/utils/supabase/api.ts`.
 
 </StepHikeCompact.Details>
 
+<StepHikeCompact.Code>
+
+```ts pages/api/auth/confirm.tsx
+import { type EmailOtpType } from '@supabase/supabase-js'
+import type { NextApiRequest, NextApiResponse } from 'next'
+
+import { createClient } from '@/utils/supabase/api'
+
+function stringOrFirstString(item: string | string[] | undefined) {
+  return Array.isArray(item) ? item[0] : item
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET') {
+    res.status(405).appendHeader('Allow', 'GET').end()
+    return
+  }
+
+  const queryParams = req.query
+  const token_hash = stringOrFirstString(queryParams.token_hash)
+  const type = stringOrFirstString(queryParams.type)
+
+  let next = '/error'
+
+  if (token_hash && type) {
+    const supabase = createClient(req, res)
+    const { error } = await supabase.auth.verifyOtp({
+      type: type as EmailOtpType,
+      token_hash,
+    })
+    if (error) {
+      console.error(error)
+    } else {
+      next = stringOrFirstString(queryParams.next) || '/'
+    }
+  }
+
+  res.redirect(next)
+}
+```
+
+</StepHikeCompact.Code>
+
+</StepHikeCompact.Step>
+
+<StepHikeCompact.Step step={7}>
+
+<StepHikeCompact.Details title="Make an authenticated-only page using `getServerSideProps`">
+
+You can make a page visible to authenticated users only by checking for the user data in `getServerSideProps`. Unauthenticated users will be redirected to the home page.
+
+</StepHikeCompact.Details>
+
+<StepHikeCompact.Code>
+
+```ts pages/private.tsx
+
+```
+
+</StepHikeCompact.Code>
+
+</StepHikeCompact.Step>
+
+<StepHikeCompact.Step step={8}>
+
+<StepHikeCompact.Details title="Fetch static data using `getStaticProps`">
+
+</StepHikeCompact.Details>
+
+<StepHikeCompact.Code>
+
+```ts pages/public.tsx
+
+```
+
+</StepHikeCompact.Code>
+
 </StepHikeCompact.Step>
 
 </StepHikeCompact>
+
+## Congratulations
+
+You're done! To recap, you've successfully:
+
+- Called Supabase from a component
+- Called Supabase from an API route
+- Called Supabase from `getServerSideProps`
+- Called Supabase from `getStaticProps`
+
+You can now use any Supabase features from your client or server code!
 
 </TabPanel>
 
