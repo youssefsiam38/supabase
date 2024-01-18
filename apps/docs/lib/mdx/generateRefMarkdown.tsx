@@ -4,6 +4,7 @@ import { CodeHikeConfig, remarkCodeHike } from '@code-hike/mdx'
 import codeHikeTheme from 'config/code-hike.theme.json' assert { type: 'json' }
 import matter from 'gray-matter'
 import { serialize } from 'next-mdx-remote/serialize'
+import { join } from 'node:path'
 import remarkGfm from 'remark-gfm'
 import { ICommonMarkdown } from '~/components/reference/Reference.types'
 
@@ -17,7 +18,7 @@ async function generateRefMarkdown(sections: ICommonMarkdown[], slug: string) {
    */
   await Promise.all(
     sections.map(async (section) => {
-      const pathName = `docs/ref${slug}/${section.id}.mdx`
+      const pathName = join(process.cwd(), `docs/ref${slug}/${section.id}.mdx`)
 
       function checkFileExists(x) {
         if (fs.existsSync(x)) {
