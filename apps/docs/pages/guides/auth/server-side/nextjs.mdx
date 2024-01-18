@@ -183,6 +183,16 @@ Since Server Components can't write cookies, you need middleware to refresh expi
 
 Add a matcher so the middleware doesn't run on routes that don't access Supabase.
 
+<Admonition type="danger">
+
+The middleware uses `supabase.auth.getSession()`.
+
+For performance, this function doesn't revalidate the user's Auth token except when the cookie's token expires.
+
+If you extend your middleware to process user data, replace `getSession` with `getUser` to ensure that user data is always revalidated.
+
+</Admonition>
+
 </StepHikeCompact.Details>
 
 <StepHikeCompact.Code>
@@ -437,6 +447,46 @@ export default async function PrivatePage() {
 </StepHikeCompact.Step>
 
 </StepHikeCompact>
+
+## Congratulations
+
+You're done! To recap, you've successfully:
+
+- Called Supabase from a Server Action
+- Called Supabase from a Server Component
+- Set up a Supabase client utility to call Supabase from a Client Component
+- Set up middleware to automatically refresh the Supabase Auth session
+
+You can now use any Supabase features from your client or server code!
+
+## FAQ
+
+<Accordion
+  type="default"
+  openBehaviour="multiple"
+  chevronAlign="right"
+  justified
+  size="medium"
+  className="text-foreground-light mt-8 mb-6"
+>
+  <div className="border-b pb-3">
+    <Accordion.Item
+      header={<span className="text-foreground">Which type of Supabase client should I use?</span>}
+      id="choosing-client"
+    >
+      In this tutorial, you wrote functions to create 3 different types of Supabase client: client, server, and action. Choose which one to use based on where your code is located:
+
+      | Code location | Type of Supabase client |
+      | - | - |
+      | Client Component | Client |
+      | Server Component | Server |
+      | Server Action | Action |
+      | Route Handler | Action |
+
+    </Accordion.Item>
+
+  </div>
+</Accordion>
 
 </TabPanel>
 
@@ -765,14 +815,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 <StepHikeCompact.Details title="Make an authenticated-only page using `getServerSideProps`">
 
-You can make a page visible to authenticated users only by checking for the user data in `getServerSideProps`. Unauthenticated users will be redirected to the home page.
+If you use dynamic server-side rendering, you can serve a page to authenticated users only by checking for the user data in `getServerSideProps`. Unauthenticated users will be redirected to the home page.
+
+Since you're calling Supabse from `getServerSideProps`, use the client from `@/utils/supabase/server-props.ts`.
 
 </StepHikeCompact.Details>
 
 <StepHikeCompact.Code>
 
 ```ts pages/private.tsx
+import { User } from '@supabase/supabase-js'
+import { GetServerSidePropsContext } from 'next'
 
+import { createClient } from '@/utils/supabase/server-props'
+
+export default function PrivatePage({ user }: { user: User }) {
+  return <h1>Hello, {user.email || 'user'}!</h1>
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const supabase = createClient(context)
+
+  const { data, error } = await supabase.auth.getUser()
+
+  if (error || !data) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: {
+      user: data.user,
+    },
+  }
+}
 ```
 
 </StepHikeCompact.Code>
@@ -783,12 +863,34 @@ You can make a page visible to authenticated users only by checking for the user
 
 <StepHikeCompact.Details title="Fetch static data using `getStaticProps`">
 
+You can also fetch static data at build time using Supabase. Note that there's no session or user at build time, so the data will be the same for everyone who sees the page.
+
+Add some countries data to your database by running the [Countries Quickstart](https://supabase.com/dashboard/project/_/sql/quickstarts) in the dashboard.
+
+Then fetch the countries data using `getStaticProps` with the client from `@/utils/supabase/static-props.ts`.
+
 </StepHikeCompact.Details>
 
 <StepHikeCompact.Code>
 
 ```ts pages/public.tsx
+import { createClient } from '@/utils/supabase/static-props'
 
+export default function PublicPage({ data }: { data?: any[] }) {
+  return <pre>{data && JSON.stringify(data, null, 2)}</pre>
+}
+
+export async function getStaticProps() {
+  const supabase = createClient()
+
+  const { data, error } = await supabase.from('countries').select()
+
+  if (error || !data) {
+    return { props: {} }
+  }
+
+  return { props: { data } }
+}
 ```
 
 </StepHikeCompact.Code>
@@ -813,6 +915,20 @@ You can now use any Supabase features from your client or server code!
 <TabPanel id="hybrid" label="Hybrid router strategies">
 
 You can use both the App and Pages Routers together.
+
+Follow the instructions for both the App and Pages Routers. Whenever you need to connect to Supabase, import the `createClient` utility that you need:
+
+| Router       | Code location                  | Which `createClient` to use |
+| ------------ | ------------------------------ | --------------------------- |
+| App Router   | Server Component               | `server.ts`                 |
+|              | Client Component               | `client.ts`                 |
+|              | Server Action or Route Handler | `actions.ts`                |
+| Pages Router | `getServerSideProps`           | `server-props.ts`           |
+|              | `getStaticProps`               | `static-props.ts`           |
+|              | Component                      | `component.ts`              |
+|              | API route                      | `api.ts`                    |
+
+Remember to create the `middleware.ts` file for the App Router so the session will be fresh for Server Components.
 
 </TabPanel>
 
