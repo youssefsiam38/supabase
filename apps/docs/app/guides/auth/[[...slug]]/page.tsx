@@ -2,7 +2,6 @@ import { compileMDX } from 'next-mdx-remote/rsc'
 import Link from 'next/link'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { fileURLToPath } from 'url'
 
 import { Admonition } from 'ui/src/components/Admonition'
 import AuthProviders from '~/components/AuthProviders'
@@ -12,7 +11,7 @@ const components = { Admonition, AuthProviders, IconPanel, Link }
 
 export default async function RemoteMdxPage({ params: { slug } }: { params: { slug: string[] } }) {
   const shortPath = slug?.join('/') ?? ''
-  const guidesDir = join(fileURLToPath(import.meta.url), '../../../../../content/guides')
+  const guidesDir = join(process.cwd(), 'content/guides')
   const fullPath = `${guidesDir}/auth${shortPath ? `/${shortPath}` : ''}.mdx`
 
   try {
