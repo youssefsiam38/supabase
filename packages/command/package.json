@@ -1,7 +1,7 @@
 {
   "name": "command",
   "version": "0.0.1",
-  "main": "index.tsx",
+  "main": "src/index.tsx",
   "sideEffects": "false",
   "license": "MIT",
   "scripts": {
@@ -11,5 +11,9 @@
     "next": "*",
     "react": "*",
     "react-dom": "*"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "valtio": "^1.13.0"
   }
 }
