@@ -29,6 +29,7 @@
     "@supabase/supabase-js": "^2.39.3",
     "classnames": "^2.3.1",
     "cobe": "^0.6.2",
+    "command": "*",
     "common": "*",
     "config": "*",
     "dat.gui": "^0.7.9",

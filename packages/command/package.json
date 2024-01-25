@@ -1,0 +1,15 @@
+{
+  "name": "command",
+  "version": "0.0.1",
+  "main": "index.tsx",
+  "sideEffects": "false",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "next": "*",
+    "react": "*",
+    "react-dom": "*"
+  }
+}

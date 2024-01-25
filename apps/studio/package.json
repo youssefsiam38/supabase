@@ -43,6 +43,7 @@
     "ajv": "^8.6.3",
     "awesome-debounce-promise": "^2.1.0",
     "clsx": "^1.2.1",
+    "command": "*",
     "common": "*",
     "common-tags": "^1.8.2",
     "config": "*",
