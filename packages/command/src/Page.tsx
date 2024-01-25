@@ -12,10 +12,10 @@ export class Page {
   private _id: PageId
   name: string
 
-  private _parentIds: Array<PageId>
-  private _childIds: Array<PageId>
+  protected _parentIds: Array<PageId>
+  protected _childIds: Array<PageId>
 
-  private _pageMap: PageMap | null
+  protected _pageMap: PageMap | null
 
   static genId() {
     return uniqueId('page_')
@@ -51,5 +51,31 @@ export class Page {
     if (this._pageMap && !child.hasPageMap()) {
       child.attachPageMap(this._pageMap)
     }
+  }
+
+  detach() {
+    // Detach own children first to prevent leaking children
+    for (const childId of this._childIds) {
+      const child = this._pageMap?.get(childId)
+      if (!child) return
+
+      const index = child._parentIds.indexOf(this.id)
+      child._parentIds.splice(index, 1)
+      if (child._parentIds.length === 0) {
+        child.detach()
+      }
+    }
+
+    for (const parentId of this._parentIds) {
+      const parent = this._pageMap?.get(parentId)
+      if (!parent) return
+
+      const index = parent._childIds.indexOf(this.id)
+      parent._childIds.splice(index, 1)
+    }
+
+    this._pageMap?.delete(this.id)
+    // Suspect this isn't actually necessary
+    this._pageMap = null
   }
 }
