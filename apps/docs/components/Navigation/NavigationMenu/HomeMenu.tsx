@@ -8,7 +8,7 @@ import { Badge, cn } from 'ui'
 import HomeMenuIconPicker from './HomeMenuIconPicker'
 import { HOMEPAGE_MENU_ITEMS } from './NavigationMenu.constants'
 
-const HeaderLogo = memo(function HeaderLogo() {
+export const HeaderLogo = memo(function HeaderLogo() {
   const { resolvedTheme } = useTheme()
   return (
     <Link href="/" className="px-10 flex items-center gap-2">

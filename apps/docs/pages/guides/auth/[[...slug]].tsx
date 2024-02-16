@@ -2,6 +2,7 @@ import { type GetStaticPaths, type GetStaticProps, type InferGetStaticPropsType 
 import { MDXRemote } from 'next-mdx-remote'
 
 import components from '~/components'
+import NavigationMenuGuideList from '~/components/Navigation/NavigationMenu/NavigationMenuGuideList'
 import Layout from '~/layouts/DefaultGuideLayout'
 import { NavContainerContents } from '~/layouts/utils/contexts/NavContainerContext'
 import { getGuidesStaticPaths, getGuidesStaticProps } from '~/lib/docs'
@@ -23,7 +24,9 @@ export default function AuthGuide({
 
   return (
     <Layout meta={meta} hideToc={hideToc} editLink={editLink}>
-      <NavContainerContents>AUTH!!!</NavContainerContents>
+      <NavContainerContents>
+        <NavigationMenuGuideList id="auth" />
+      </NavContainerContents>
       <MDXRemote {...mdxSource} components={components} />
     </Layout>
   )

@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router'
 import { memo, useEffect } from 'react'
 import { menuState, useMenuLevelId } from '~/hooks/useMenuState'
-import NavigationMenuHome from './HomeMenu'
 import NavigationMenuGuideList from './NavigationMenuGuideList'
 import NavigationMenuRefList from './NavigationMenuRefList'
 
@@ -239,8 +238,6 @@ function getMenuByUrl(basePath: string, url: string) {
 function getMenuElement(menu: Menu) {
   const menuType = menu.type
   switch (menuType) {
-    case 'home':
-      return <NavigationMenuHome />
     case 'guide':
       return <NavigationMenuGuideList id={menu.id} />
     case 'reference':
