@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { Button, IconBackground, IconChevronRight, IconPlay, TextLink } from 'ui'
 import { GlassPanel } from 'ui-patterns/GlassPanel'
 import { IconPanel } from 'ui-patterns/IconPanel'
+import { NavContainerContents } from '~/layouts/utils/contexts/NavContainerContext'
+import { NavigationMenuHome } from '~/components/Navigation/NavigationMenu/HomeMenu'
 
 import HomeMenuIconPicker from '~/components/Navigation/NavigationMenu/HomeMenuIconPicker'
 
@@ -12,6 +14,10 @@ export const meta = {
     'Supabase is an open source Firebase alternative providing all the backend features you need to build a product.',
   subtitle: 'Supabase Developer Documentation and API Reference',
 }
+
+<NavContainerContents>
+  <NavigationMenuHome />
+</NavContainerContents>
 
 <div className="flex flex-col">
   <div>

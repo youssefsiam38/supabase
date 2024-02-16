@@ -7,9 +7,10 @@ import '../styles/prism-okaidia.scss'
 import { SessionContextProvider } from '@supabase/auth-helpers-react'
 import { createClient } from '@supabase/supabase-js'
 import { QueryClientProvider, useQueryClient } from '@tanstack/react-query'
-import { AuthProvider, ThemeProvider, useTelemetryProps, useThemeSandbox } from 'common'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState, type PropsWithChildren } from 'react'
+
+import { AuthProvider, ThemeProvider, useTelemetryProps, useThemeSandbox } from 'common'
 import { CommandMenuProvider, PortalToast, TabsProvider } from 'ui'
 import { useConsent } from 'ui-patterns/ConsentToast'
 
@@ -19,9 +20,10 @@ import SiteLayout from '~/layouts/SiteLayout'
 import { IS_PLATFORM } from '~/lib/constants'
 import { unauthedAllowedPost } from '~/lib/fetch/fetchWrappers'
 import { useRootQueryClient } from '~/lib/fetch/queryClient'
+import { NavContainerContextProvider } from '~/layouts/utils/contexts/NavContainerContext'
 import { LOCAL_STORAGE_KEYS, remove } from '~/lib/storage'
 import { useOnLogout } from '~/lib/userAuth'
-import { AppPropsWithLayout } from '~/types'
+import { type AppPropsWithLayout } from '~/types'
 
 /**
  *
@@ -196,15 +198,17 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           <SignOutHandler>
             <ThemeProvider defaultTheme="system" enableSystem disableTransitionOnChange>
               <CommandMenuProvider site="docs">
-                <TabsProvider>
-                  <div className="h-screen flex flex-col">
-                    <IPv4DeprecationBanner />
-                    <SiteLayout>
-                      <PortalToast />
-                      <Component {...pageProps} />
-                    </SiteLayout>
-                  </div>
-                </TabsProvider>
+                <NavContainerContextProvider>
+                  <TabsProvider>
+                    <div className="h-screen flex flex-col">
+                      <IPv4DeprecationBanner />
+                      <SiteLayout>
+                        <PortalToast />
+                        <Component {...pageProps} />
+                      </SiteLayout>
+                    </div>
+                  </TabsProvider>
+                </NavContainerContextProvider>
               </CommandMenuProvider>
             </ThemeProvider>
           </SignOutHandler>

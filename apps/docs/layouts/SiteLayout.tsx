@@ -1,13 +1,10 @@
-import { useTheme } from 'next-themes'
-import Image from 'next/legacy/image'
-import Link from 'next/link'
-import NavigationMenu from '~/components/Navigation/NavigationMenu/NavigationMenu'
-import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
-
 import Head from 'next/head'
-import { PropsWithChildren, memo, useEffect } from 'react'
+import { type PropsWithChildren, memo, useEffect } from 'react'
+
 import Footer from '~/components/Navigation/Footer'
+import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
 import { menuState, useMenuLevelId, useMenuMobileOpen } from '~/hooks/useMenuState'
+import { useNavContainerContext } from '~/layouts/utils/contexts/NavContainerContext'
 
 const levelsData = {
   home: {
@@ -240,24 +237,6 @@ const MobileMenuBackdrop = memo(function MobileMenuBackdrop() {
   )
 })
 
-const HeaderLogo = memo(function HeaderLogo() {
-  const { resolvedTheme } = useTheme()
-  return (
-    <Link href="/" className="px-10 flex items-center gap-2">
-      <Image
-        className="cursor-pointer"
-        src={
-          resolvedTheme?.includes('dark') ? '/docs/supabase-dark.svg' : '/docs/supabase-light.svg'
-        }
-        width={96}
-        height={24}
-        alt="Supabase Logo"
-      />
-      <span className="font-mono text-sm font-medium text-brand-link">DOCS</span>
-    </Link>
-  )
-})
-
 const Container = memo(function Container(props: PropsWithChildren) {
   const mobileMenuOpen = useMenuMobileOpen()
 
@@ -281,6 +260,7 @@ const Container = memo(function Container(props: PropsWithChildren) {
 
 const NavContainer = memo(function NavContainer() {
   const mobileMenuOpen = useMenuMobileOpen()
+  const { setNavContainer } = useNavContainerContext()
 
   return (
     <nav
@@ -298,6 +278,7 @@ const NavContainer = memo(function NavContainer() {
       ].join(' ')}
     >
       <div
+        ref={setNavContainer}
         className={[
           'top-0',
           'relative',
@@ -306,41 +287,7 @@ const NavContainer = memo(function NavContainer() {
           'backdrop-blur backdrop-filter bg-background',
           'flex flex-col',
         ].join(' ')}
-      >
-        <h1 id="main-nav-title" className="sr-only">
-          Main menu
-        </h1>
-        <div className="top-0 sticky z-10">
-          <div>
-            <div>
-              <div
-                className={[
-                  'hidden lg:flex lg:height-auto',
-                  'pt-8 bg-background flex-col gap-8',
-                ].join(' ')}
-              >
-                <HeaderLogo />
-              </div>
-              <div className="h-4 bg-background w-full"></div>
-              <div className="bg-gradient-to-b from-background to-transparent h-4 w-full"></div>
-            </div>
-          </div>
-        </div>
-        <div
-          className={[
-            'transition-all ease-out duration-200',
-            'absolute left-0 right-0 h-screen',
-            'px-5 pl-5 py-16',
-            'top-[0px]',
-            'bg-background',
-            // desktop styles
-            'lg:relative lg:top-0 lg:left-0 lg:pb-10 lg:px-10 lg:pt-0 lg:flex',
-            'lg:opacity-100 lg:visible',
-          ].join(' ')}
-        >
-          <NavigationMenu />
-        </div>
-      </div>
+      ></div>
     </nav>
   )
 })

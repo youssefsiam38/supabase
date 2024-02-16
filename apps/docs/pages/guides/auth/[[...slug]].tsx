@@ -3,6 +3,7 @@ import { MDXRemote } from 'next-mdx-remote'
 
 import components from '~/components'
 import Layout from '~/layouts/DefaultGuideLayout'
+import { NavContainerContents } from '~/layouts/utils/contexts/NavContainerContext'
 import { getGuidesStaticPaths, getGuidesStaticProps } from '~/lib/docs'
 
 export const getStaticPaths = (async () => {
@@ -22,6 +23,7 @@ export default function AuthGuide({
 
   return (
     <Layout meta={meta} hideToc={hideToc} editLink={editLink}>
+      <NavContainerContents>AUTH!!!</NavContainerContents>
       <MDXRemote {...mdxSource} components={components} />
     </Layout>
   )
