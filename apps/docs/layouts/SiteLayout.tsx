@@ -146,10 +146,16 @@ const levelsData = {
 
 const MobileHeader = memo(function MobileHeader() {
   const mobileMenuOpen = useMenuMobileOpen()
-  const menuLevel = useMenuLevelId()
+  const { setMobileHeaderContainer, hiddenMobileData } = useNavContainerContext()
+
+  /**
+   * Inversion of control. This is set by the page.
+   */
+  const menuLevel = hiddenMobileData ? hiddenMobileData.dataset.menuid : 'home'
 
   return (
     <div
+      ref={setMobileHeaderContainer}
       className={[
         'transition-all ease-out z-10',
         'top-0',

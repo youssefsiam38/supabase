@@ -21,6 +21,7 @@ export const menuState = proxy({
 export const useMenuActiveRefId = () => {
   return useSnapshot(menuState).menuActiveRefId
 }
+
 export const useMenuLevelId = () => {
   return useSnapshot(menuState).menuLevelId
 }

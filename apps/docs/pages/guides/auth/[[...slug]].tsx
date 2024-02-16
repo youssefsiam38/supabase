@@ -24,8 +24,8 @@ export default function AuthGuide({
 
   return (
     <Layout meta={meta} hideToc={hideToc} editLink={editLink}>
-      <NavContainerContents>
-        <NavigationMenuGuideList id="auth" />
+      <NavContainerContents menuId="auth">
+        <NavigationMenuGuideList menuId="auth" />
       </NavContainerContents>
       <MDXRemote {...mdxSource} components={components} />
     </Layout>

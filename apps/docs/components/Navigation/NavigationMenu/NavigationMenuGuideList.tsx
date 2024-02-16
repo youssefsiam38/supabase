@@ -5,14 +5,14 @@ import NavigationMenuGuideListItems from './NavigationMenuGuideListItems'
 import * as NavItems from './NavigationMenu.constants'
 
 interface Props {
-  id: string
+  menuId: string
   collapsible?: boolean
   value?: string[]
 }
-const NavigationMenuGuideList: React.FC<Props> = ({ id, value }) => {
+const NavigationMenuGuideList: React.FC<Props> = ({ menuId, value }) => {
   const router = useRouter()
 
-  const menu = NavItems[id]
+  const menu = NavItems[menuId]
 
   // get url
   const url = router.asPath
@@ -31,12 +31,12 @@ const NavigationMenuGuideList: React.FC<Props> = ({ id, value }) => {
   return (
     <Accordion.Root
       collapsible={true}
-      key={id}
+      key={menuId}
       type={value ? 'multiple' : 'single'}
       value={value ?? firstLevelRoute}
       className="transition-all duration-150 ease-out opacity-100 ml-0 delay-150"
     >
-      <NavigationMenuGuideListItems menu={menu} id={id} />
+      <NavigationMenuGuideListItems menu={menu} id={menuId} />
     </Accordion.Root>
   )
 }
