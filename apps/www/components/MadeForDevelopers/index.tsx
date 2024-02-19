@@ -23,31 +23,28 @@ const MadeForDevelopers = () => {
         // @ts-ignore
         content={CodeExamples}
         footer={[
-          <dl className="grid grid-cols-12 gap-y-4 md:gap-8" key={'madefordeveloper-footer'}>
+          <div className="grid grid-cols-12 gap-y-4 md:gap-8" key="madefordeveloper-footer">
             {DeveloperFeatures.map((feature: any, i: number) => {
               return (
-                <div className="col-span-12 md:col-span-6 lg:col-span-6" key={i}>
-                  <div className="lg:mt-5">
-                    <dt>
-                      <FeatureColumn title={feature.name} text={feature.description} />
-                      {feature.badge && (
-                        <div className="mb-4 block">
-                          <Badge dot color="blue">
-                            {feature.badge}
-                          </Badge>
-                        </div>
-                      )}
-                      {feature.badge ? (
-                        <TextLink url={feature.url} label="Get notified" />
-                      ) : (
-                        <TextLink url={feature.url} label="Explore more" />
-                      )}
-                    </dt>
-                  </div>
+                <div
+                  key={feature.title}
+                  className="col-span-12 md:col-span-6 lg:col-span-6 lg:mt-5"
+                >
+                  <FeatureColumn title={feature.name} text={feature.description} />
+                  {feature.badge && (
+                    <Badge dot color="blue" className="mb-4 block">
+                      {feature.badge}
+                    </Badge>
+                  )}
+                  {feature.badge ? (
+                    <TextLink url={feature.url} label="Get notified" />
+                  ) : (
+                    <TextLink url={feature.url} label="Explore more" />
+                  )}
                 </div>
               )
             })}
-          </dl>,
+          </div>,
         ]}
       />
     </SectionContainer>
