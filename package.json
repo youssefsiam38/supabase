@@ -5,7 +5,7 @@
   "author": "Supabase, Inc.",
   "license": "Apache-2.0",
   "private": true,
-  "workspaces": ["apps/*", "apps/docs/spec/parser", "tests", "playwright-tests", "packages/*"],
+  "workspaces": ["apps/*", "apps/docs/spec/parser", "packages/*", "tests/*"],
   "scripts": {
     "build": "turbo run build",
     "build:studio": "turbo run build --filter=studio",
