@@ -7,21 +7,23 @@ import { useInterval } from 'react-use'
 const SEQUENCE = ['random', 'random', 'random', 'random', 'eleven']
 
 const LW11Canvas = () => {
+  const [mounted, setMounted] = React.useState(false)
   const [sequenceIndex, setSequenceIndex] = React.useState<number>(0)
-  const [comp, setComp] = React.useState<number[]>([])
+  const [comp, setComp] = React.useState<number[]>(figures.eleven)
   const [isTimerActive, setIsTimerActive] = React.useState(true)
   if (!isBrowser) return null
-  const GRID_WIDTH = 60
-  const GRID_HEIGHT = 40
+  const GRID_WIDTH = 40
+  const GRID_HEIGHT = 20
+  const grid = [GRID_WIDTH, GRID_HEIGHT]
   let SEQUENCE_DELAY = 3000
 
-  useInterval(
-    () => {
-      // setSequenceIndex((prev: number) => (prev === SEQUENCE.length - 1 ? 0 : ++prev))
-      handleSequenceAnimation()
-    },
-    isTimerActive ? (sequenceIndex === 2 ? SEQUENCE_DELAY : 200) : null
-  )
+  // useInterval(
+  //   () => {
+  //     // setSequenceIndex((prev: number) => (prev === SEQUENCE.length - 1 ? 0 : ++prev))
+  //     handleSequenceAnimation()
+  //   },
+  //   isTimerActive ? (sequenceIndex === 2 ? SEQUENCE_DELAY : 200) : null
+  // )
 
   const gridArr = [...new Array(GRID_WIDTH * GRID_HEIGHT)]
 
@@ -33,18 +35,18 @@ const LW11Canvas = () => {
         return (
           <div
             className={cn(
-              'group rounded-full h-4 w-4 transition-colors hover:bg-surface-100 flex items-center justify-center'
+              'relative group rounded-full h-full aspect-square transition-colors hover:bg-surface-100 flex items-center justify-center'
             )}
             onClick={() => handleDotClick(index)}
             key={`dot-${index}`}
           >
             <div
               className={cn(
-                'dot-point opacity-10 h-px w-px rounded-xs bg-foreground group-hover:from-indigo-600 group-hover:to-white transition-all will-change-transform',
-                isActive && 'isActive'
+                'dot-point opacity-50 h-px w-px rounded-xs bg-foreground group-hover:from-indigo-600 group-hover:to-white transition-all will-change-transform'
               )}
               data-index={index}
             />
+            {/* <div className='absolute inset-0 w-px h-px rounded bg-foreground opacity-10' /> */}
           </div>
         )
       })}
@@ -52,7 +54,7 @@ const LW11Canvas = () => {
   )
 
   const handleDotClick = (index: number) => {
-    setIsTimerActive(false)
+    // setIsTimerActive(false)
     // if (comp.includes(index)) {
     //   const newArr = comp.filter((el) => el !== index)
 
@@ -63,10 +65,6 @@ const LW11Canvas = () => {
 
     anime({
       targets: '.dot-point',
-      scale: [
-        { value: 2, easing: 'easeOutSine', duration: 200 },
-        { value: 1, easing: 'easeInOutQuad', duration: 400 },
-      ],
       opacity: [
         { value: 1, easing: 'easeOutSine', duration: 200 },
         { value: 0.1, easing: 'easeInOutQuad', duration: 400 },
@@ -96,20 +94,200 @@ const LW11Canvas = () => {
   }
 
   React.useEffect(() => {
-    const isEleven = sequenceIndex === 2
-    anime({
-      targets: '.isActive',
-      scale: [
-        { value: 5, easing: 'easeOutSine', duration: isEleven ? 100 : 10 },
-        // { value: 1, easing: 'easeInOutQuad', duration: 400 },
-      ],
-      opacity: [
-        { value: 1, easing: 'easeOutSine', duration: isEleven ? 100 : 10 },
-        // { value: 0.1, easing: 'easeInOutQuad', duration: 400 },
-      ],
-      // complete: handleSequenceAnimation,
-    })
-  }, [sequenceIndex])
+    setMounted(true)
+
+    setTimeout(() => {
+      const tl = anime
+        .timeline({
+          targets: '.dot-point',
+          // easing: 'easeInOutSine',
+          // delay: anime.stagger(50),
+          loop: true,
+          autoplay: false,
+        })
+        .add({
+          scale: [
+            { value: 2, easing: 'easeOutSine', duration: 1500 },
+            { value: 1, easing: 'easeInOutQuad', duration: 3000 },
+          ],
+          opacity: [
+            { value: 1, easing: 'easeOutSine', duration: 1100 },
+            { value: 0.1, easing: 'easeInOutQuad', duration: 3000 },
+          ],
+          delay: anime.stagger(100, { grid: grid, from: 'center' }),
+        })
+        .add({
+          keyframes: [
+            {
+              opacity: 1,
+              duration: 1800,
+            },
+            {
+              translateX: 0,
+              translateY: -10,
+              scaleY: 4,
+              scaleX: 1,
+              opacity: 0.5,
+              scale: 2,
+            },
+            {
+              translateY: 0,
+              opacity: 1,
+              scaleY: 4,
+              scaleX: 1,
+              rotateZ: (_: any, i: number) => 1 + i,
+              duration: 2000,
+              delay: anime.stagger(10, { grid: grid, from: 'center' }),
+            },
+            {
+              translateY: 0,
+              opacity: (_: any, i: number) => anime.random(0, 1),
+              scaleY: 1,
+              scaleX: 1,
+              duration: 1800,
+              scale: 1,
+              delay: anime.stagger(30, { grid: grid, from: 'center' }),
+            },
+          ],
+          duration: 3000,
+          easing: 'easeOutElastic(1, .8)',
+          delay: anime.stagger(100, { grid: grid, from: 'center' }),
+        })
+        .add({
+          opacity: [
+            { value: 1, easing: 'easeOutSine', duration: 400 },
+            { value: 0.1, easing: 'easeInOutQuad', duration: 20 },
+          ],
+          duration: 2000,
+          delay: anime.stagger(20, { grid: grid, from: 'center' }),
+        })
+        .add({
+          opacity: [
+            { value: 1, easing: 'easeOutSine', duration: 150 },
+            { value: 0.1, easing: 'easeInOutQuad', duration: 200 },
+          ],
+          duration: 1000,
+          delay: anime.stagger(50, { grid: grid, from: 'center' }),
+        })
+        .add({
+          scale: 1,
+          translateX: 0,
+          translateY: 0,
+          opacity: 1,
+          duration: 2000,
+          rotate: anime.stagger(0, { grid: grid, from: 'center' }),
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+        .add({
+          translateX: 0,
+          translateY: 0,
+          scaleY: 6,
+          scaleX: 1,
+          rotate: 180,
+          duration: 2000,
+          opacity: 1,
+          delay: anime.stagger(50, { grid: grid, from: 'center' }),
+        })
+        .add({
+          rotate: anime.stagger([90, 0], { grid: grid, from: 'center' }),
+          duration: 3000,
+          delay: anime.stagger(100, { grid: grid, from: 'center' }),
+        })
+        .add({
+          scaleY: anime.stagger(1.5, { grid: grid, from: 'center' }),
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+        .add({
+          translateX: 0,
+          translateY: 0,
+          scaleX: 1,
+          rotate: 180,
+          duration: 2000,
+          delay: anime.stagger(50, { grid: grid, from: 'center' }),
+        })
+        .add({
+          translateX: anime.stagger('.25rem', { grid: grid, from: 'center', axis: 'x' }),
+          translateY: anime.stagger('.25rem', { grid: grid, from: 'center', axis: 'y' }),
+          rotate: 0,
+          scaleX: 1,
+          scaleY: 1.25,
+          duration: 2000,
+          delay: anime.stagger(1, { from: 'center' }),
+        })
+        .add({
+          translateX: [
+            { value: anime.stagger('-.1rem', { grid: grid, from: 'center', axis: 'x' }) },
+            { value: anime.stagger('.1rem', { grid: grid, from: 'center', axis: 'x' }) },
+          ],
+          translateY: [
+            { value: anime.stagger('-.1rem', { grid: grid, from: 'center', axis: 'y' }) },
+            { value: anime.stagger('.1rem', { grid: grid, from: 'center', axis: 'y' }) },
+          ],
+          duration: 2000,
+          scale: 1.5,
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+        .add({
+          scale: 1,
+          rotate: () => anime.random(-10, 180),
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+        .add({
+          scale: 1,
+          opacity: 1,
+          translateX: 0,
+          translateY: 0,
+          rotate: 0,
+          duration: 1000,
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+      // .add({
+      //   translateX: [
+      //     {value: anime.stagger('-.1rem', {grid: grid, from: 'center', axis: 'x'}) },
+      //     {value: anime.stagger('.1rem', {grid: grid, from: 'center', axis: 'x'}) }
+      //   ],
+      //   translateY: [
+      //     {value: anime.stagger('-.1rem', {grid: grid, from: 'center', axis: 'y'}) },
+      //     {value: anime.stagger('.1rem', {grid: grid, from: 'center', axis: 'y'}) }
+      //   ],
+      //   duration: 400,
+      //   scale: .5,
+      //   delay: anime.stagger(20, {grid: grid, from: 'center'})
+      // })
+      // .add({
+      //   translateX: () => anime.random(-10, 10),
+      //   translateY: () => anime.random(-10, 10),
+      //   delay: anime.stagger(1, {from: 'last'})
+      // })
+      // .add({
+      //   translateX: anime.stagger('.25rem', {grid: grid, from: 'center', axis: 'x'}),
+      //   translateY: anime.stagger('.25rem', {grid: grid, from: 'center', axis: 'y'}),
+      //   rotate: 0,
+      //   scaleX: 2.5,
+      //   scaleY: .25,
+      //   delay: anime.stagger(1, {from: 'center'})
+      // })
+      // .add({
+      //   rotate: anime.stagger([90, 0], {grid: grid, from: 'center'}),
+      //   delay: anime.stagger(10, {grid: grid, from: 'center'})
+      // })
+      // .add({
+      //   translateX: 0,
+      //   translateY: 0,
+      //   scale: .5,
+      //   scaleX: 1,
+      //   rotate: 180,
+      //   duration: 1000,
+      //   delay: anime.stagger(50, {grid: grid, from: 'center'})
+      // })
+      // .add({
+      //   scaleY: 1,
+      //   scale: 1,
+      //   delay: anime.stagger(20, {grid: grid, from: 'center'})
+      // })
+      tl.play()
+    }, 100)
+  }, [])
 
   const selectRandom = (amount: number) => {
     let randomPicks = []
@@ -127,13 +305,15 @@ const LW11Canvas = () => {
     return Math.round(randomNumber)
   }
 
+  if (!mounted) return null
+
   return (
     <div className="absolute flex items-center justify-center object-center -top-4 mx-auto w-screen h-screen overflow-hidden">
-      <div className="absolute left-4 top-4 bg-overlay rounded border p-4">
+      {/* <div className="absolute left-4 top-4 bg-overlay rounded border p-4">
         <p>
           Current sequence: #{sequenceIndex} - {SEQUENCE[sequenceIndex]}
         </p>
-      </div>
+      </div> */}
       <div
         style={{ gridTemplateColumns: `repeat(${GRID_WIDTH}, 1fr)` }}
         className="grid-container object-center grid w-full h-full items-center justify-center"
