@@ -3,6 +3,8 @@ import anime from 'animejs'
 import { isBrowser } from 'common'
 import { cn } from 'ui'
 import { useInterval } from 'react-use'
+import DefaultLayout from '~/components/Layouts/Default'
+import SectionContainer from '~/components/Layouts/SectionContainer'
 
 const SEQUENCE = ['random', 'random', 'random', 'random', 'eleven']
 
@@ -40,9 +42,9 @@ const LW11Canvas = () => {
           >
             <div
               className={cn(
-                'dot-point opacity-10 h-px w-px rounded bg-foreground group-hover:from-indigo-600 group-hover:to-white transition-all will-change-transform',
+                'dot-point opacity-10 h-px w-px rounded-[2px] bg-foreground group-hover:from-indigo-600 group-hover:to-white transition-all will-change-transform',
                 // isActive && 'isActive'
-                isActive && 'isActive opacity-100 w-4 h-4'
+                isActive && 'isActive'
               )}
               data-index={index}
             />
@@ -129,19 +131,24 @@ const LW11Canvas = () => {
   }
 
   return (
-    <div className="absolute flex items-center justify-center object-center -top-4 mx-auto w-screen h-screen overflow-hidden">
-      {/* <div className="absolute left-4 top-4 bg-overlay rounded border p-4">
+    <DefaultLayout className="overflow-none">
+      <SectionContainer>
+        <div className="mx-auto relative w-full"></div>
+      </SectionContainer>
+      <div className="absolute flex items-center justify-center object-center -top-4 mx-auto w-screen h-screen overflow-hidden">
+        {/* <div className="absolute left-4 top-4 bg-overlay rounded border p-4">
         <p>
           Current sequence: #{sequenceIndex} - {SEQUENCE[sequenceIndex]}
         </p>
       </div> */}
-      <div
-        style={{ gridTemplateColumns: `repeat(${GRID_WIDTH}, 1fr)` }}
-        className="grid-container object-center grid w-full h-full items-center justify-center"
-      >
-        <Dots />
+        <div
+          style={{ gridTemplateColumns: `repeat(${GRID_WIDTH}, 1fr)` }}
+          className="grid-container object-center grid w-full h-full items-center justify-center"
+        >
+          <Dots />
+        </div>
       </div>
-    </div>
+    </DefaultLayout>
   )
 }
 

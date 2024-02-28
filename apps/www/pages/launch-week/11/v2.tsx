@@ -3,6 +3,8 @@ import anime from 'animejs'
 import { isBrowser } from 'common'
 import { Button, cn } from 'ui'
 import { useInterval } from 'react-use'
+import DefaultLayout from '~/components/Layouts/Default'
+import SectionContainer from '~/components/Layouts/SectionContainer'
 
 const SEQUENCE = ['random', 'random', 'random', 'random', 'eleven']
 
@@ -309,28 +311,33 @@ const LW11Canvas = () => {
   // if (!mounted) return null
 
   return (
-    <div className="absolute flex items-center justify-center object-center -top-4 mx-auto w-screen h-screen overflow-hidden">
-      <div className="absolute left-4 top-4 bg-overlay rounded border p-4">
-        {/* <p>
+    <DefaultLayout className="overflow-none">
+      <SectionContainer>
+        <div className="mx-auto relative w-full"></div>
+      </SectionContainer>
+      <div className="absolute flex items-center justify-center object-center -top-4 mx-auto w-screen h-screen overflow-hidden">
+        <div className="absolute z-40 left-4 top-4 bg-overlay rounded border p-4">
+          {/* <p>
           Current sequence: #{sequenceIndex} - {SEQUENCE[sequenceIndex]}
         </p> */}
-        <div className="flex gap-2">
-          <Button onClick={() => tl.play()}>Play</Button>
-          <Button onClick={() => tl.pause()} type="default">
-            Pause
-          </Button>
-          <Button onClick={() => tl.restart()} type="default">
-            Restart
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => tl.play()}>Play</Button>
+            <Button onClick={() => tl.pause()} type="default">
+              Pause
+            </Button>
+            <Button onClick={() => tl.restart()} type="default">
+              Restart
+            </Button>
+          </div>
+        </div>
+        <div
+          style={{ gridTemplateColumns: `repeat(${GRID_WIDTH}, 1fr)` }}
+          className="grid-container object-center grid w-full h-full items-center justify-center"
+        >
+          <Dots />
         </div>
       </div>
-      <div
-        style={{ gridTemplateColumns: `repeat(${GRID_WIDTH}, 1fr)` }}
-        className="grid-container object-center grid w-full h-full items-center justify-center"
-      >
-        <Dots />
-      </div>
-    </div>
+    </DefaultLayout>
   )
 }
 
