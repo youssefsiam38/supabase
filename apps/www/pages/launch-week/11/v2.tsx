@@ -9,12 +9,13 @@ import SectionContainer from '~/components/Layouts/SectionContainer'
 const SEQUENCE = ['random', 'random', 'random', 'random', 'eleven']
 
 const LW11Canvas = () => {
-  // const [mounted, setMounted] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
   const [sequenceIndex, setSequenceIndex] = React.useState<number>(0)
+  const [timeline, setTimeline] = React.useState<any>(null)
   const [comp, setComp] = React.useState<number[]>(figures.eleven)
   const [isTimerActive, setIsTimerActive] = React.useState(true)
   if (!isBrowser) return null
-  const GRID_WIDTH = 40
+  const GRID_WIDTH = 30
   const GRID_HEIGHT = 20
   const grid = [GRID_WIDTH, GRID_HEIGHT]
   let SEQUENCE_DELAY = 3000
@@ -69,7 +70,7 @@ const LW11Canvas = () => {
       targets: '.dot-point',
       opacity: [
         { value: 1, easing: 'easeOutSine', duration: 200 },
-        { value: 0.1, easing: 'easeInOutQuad', duration: 400 },
+        { value: 0.1, easing: 'easeInOutQuad', duration: 600 },
       ],
       complete: () => setIsTimerActive(true),
       delay: anime.stagger(20, {
@@ -95,201 +96,201 @@ const LW11Canvas = () => {
     // )
   }
 
-  const tl = anime
-    .timeline({
-      targets: '.dot-point',
-      // easing: 'easeInOutSine',
-      // delay: anime.stagger(50),
-      loop: true,
-      autoplay: false,
-    })
-    .add({
-      scale: [
-        { value: 2, easing: 'easeOutSine', duration: 1500 },
-        { value: 1, easing: 'easeInOutQuad', duration: 3000 },
-      ],
-      opacity: [
-        { value: 1, easing: 'easeOutSine', duration: 1100 },
-        { value: 0.1, easing: 'easeInOutQuad', duration: 3000 },
-      ],
-      delay: anime.stagger(100, { grid: grid, from: 'center' }),
-    })
-    .add({
-      keyframes: [
-        {
-          opacity: 1,
-          duration: 1800,
-        },
-        {
-          translateX: 0,
-          translateY: -10,
-          scaleY: 4,
-          scaleX: 1,
-          opacity: 0.5,
-          scale: 2,
-        },
-        {
-          translateY: 0,
-          opacity: 1,
-          scaleY: 4,
-          scaleX: 1,
-          rotateZ: (_: any, i: number) => 1 + i,
-          duration: 2000,
-          delay: anime.stagger(10, { grid: grid, from: 'center' }),
-        },
-        {
-          translateY: 0,
-          opacity: (_: any, i: number) => anime.random(0, 1),
-          scaleY: 1,
-          scaleX: 1,
-          duration: 1800,
-          scale: 1,
-          delay: anime.stagger(30, { grid: grid, from: 'center' }),
-        },
-      ],
-      duration: 3000,
-      easing: 'easeOutElastic(1, .8)',
-      delay: anime.stagger(100, { grid: grid, from: 'center' }),
-    })
-    .add({
-      opacity: [
-        { value: 1, easing: 'easeOutSine', duration: 400 },
-        { value: 0.1, easing: 'easeInOutQuad', duration: 20 },
-      ],
-      duration: 2000,
-      delay: anime.stagger(20, { grid: grid, from: 'center' }),
-    })
-    .add({
-      opacity: [
-        { value: 1, easing: 'easeOutSine', duration: 150 },
-        { value: 0.1, easing: 'easeInOutQuad', duration: 200 },
-      ],
-      duration: 1000,
-      delay: anime.stagger(50, { grid: grid, from: 'center' }),
-    })
-    .add({
-      scale: 1,
-      translateX: 0,
-      translateY: 0,
-      opacity: 1,
-      duration: 2000,
-      rotate: anime.stagger(0, { grid: grid, from: 'center' }),
-      delay: anime.stagger(10, { grid: grid, from: 'center' }),
-    })
-    .add({
-      translateX: 0,
-      translateY: 0,
-      scaleY: 6,
-      scaleX: 1,
-      rotate: 180,
-      duration: 2000,
-      opacity: 1,
-      delay: anime.stagger(50, { grid: grid, from: 'center' }),
-    })
-    .add({
-      rotate: anime.stagger([90, 0], { grid: grid, from: 'center' }),
-      duration: 3000,
-      delay: anime.stagger(100, { grid: grid, from: 'center' }),
-    })
-    .add({
-      scaleY: anime.stagger(1.5, { grid: grid, from: 'center' }),
-      delay: anime.stagger(10, { grid: grid, from: 'center' }),
-    })
-    .add({
-      translateX: 0,
-      translateY: 0,
-      scaleX: 1,
-      rotate: 180,
-      duration: 2000,
-      delay: anime.stagger(50, { grid: grid, from: 'center' }),
-    })
-    .add({
-      translateX: anime.stagger('.25rem', { grid: grid, from: 'center', axis: 'x' }),
-      translateY: anime.stagger('.25rem', { grid: grid, from: 'center', axis: 'y' }),
-      rotate: 0,
-      scaleX: 1,
-      scaleY: 1.25,
-      duration: 2000,
-      delay: anime.stagger(1, { from: 'center' }),
-    })
-    .add({
-      translateX: [
-        { value: anime.stagger('-.1rem', { grid: grid, from: 'center', axis: 'x' }) },
-        { value: anime.stagger('.1rem', { grid: grid, from: 'center', axis: 'x' }) },
-      ],
-      translateY: [
-        { value: anime.stagger('-.1rem', { grid: grid, from: 'center', axis: 'y' }) },
-        { value: anime.stagger('.1rem', { grid: grid, from: 'center', axis: 'y' }) },
-      ],
-      duration: 2000,
-      scale: 1.5,
-      delay: anime.stagger(10, { grid: grid, from: 'center' }),
-    })
-    .add({
-      scale: 1,
-      rotate: () => anime.random(-10, 180),
-      delay: anime.stagger(10, { grid: grid, from: 'center' }),
-    })
-    .add({
-      scale: 1,
-      opacity: 1,
-      translateX: 0,
-      translateY: 0,
-      rotate: 0,
-      duration: 1000,
-      delay: anime.stagger(10, { grid: grid, from: 'center' }),
-    })
-  // .add({
-  //   translateX: [
-  //     {value: anime.stagger('-.1rem', {grid: grid, from: 'center', axis: 'x'}) },
-  //     {value: anime.stagger('.1rem', {grid: grid, from: 'center', axis: 'x'}) }
-  //   ],
-  //   translateY: [
-  //     {value: anime.stagger('-.1rem', {grid: grid, from: 'center', axis: 'y'}) },
-  //     {value: anime.stagger('.1rem', {grid: grid, from: 'center', axis: 'y'}) }
-  //   ],
-  //   duration: 400,
-  //   scale: .5,
-  //   delay: anime.stagger(20, {grid: grid, from: 'center'})
-  // })
-  // .add({
-  //   translateX: () => anime.random(-10, 10),
-  //   translateY: () => anime.random(-10, 10),
-  //   delay: anime.stagger(1, {from: 'last'})
-  // })
-  // .add({
-  //   translateX: anime.stagger('.25rem', {grid: grid, from: 'center', axis: 'x'}),
-  //   translateY: anime.stagger('.25rem', {grid: grid, from: 'center', axis: 'y'}),
-  //   rotate: 0,
-  //   scaleX: 2.5,
-  //   scaleY: .25,
-  //   delay: anime.stagger(1, {from: 'center'})
-  // })
-  // .add({
-  //   rotate: anime.stagger([90, 0], {grid: grid, from: 'center'}),
-  //   delay: anime.stagger(10, {grid: grid, from: 'center'})
-  // })
-  // .add({
-  //   translateX: 0,
-  //   translateY: 0,
-  //   scale: .5,
-  //   scaleX: 1,
-  //   rotate: 180,
-  //   duration: 1000,
-  //   delay: anime.stagger(50, {grid: grid, from: 'center'})
-  // })
-  // .add({
-  //   scaleY: 1,
-  //   scale: 1,
-  //   delay: anime.stagger(20, {grid: grid, from: 'center'})
-  // })
-
   React.useEffect(() => {
-    // setMounted(true)
+    setMounted(true)
 
-    // setTimeout(() => {
-    tl.play()
-    // }, 100)
+    setTimeout(() => {
+      const tl = anime
+        .timeline({
+          targets: '.dot-point',
+          // easing: 'easeInOutSine',
+          // delay: anime.stagger(50),
+          loop: true,
+          autoplay: false,
+        })
+        .add({
+          scale: [
+            { value: 2, easing: 'easeOutSine', duration: 1500 },
+            { value: 1, easing: 'easeInOutQuad', duration: 1000 },
+          ],
+          opacity: [
+            { value: 1, easing: 'easeOutSine', duration: 1100 },
+            { value: 0.1, easing: 'easeInOutQuad', duration: 1000 },
+          ],
+          delay: anime.stagger(100, { grid: grid, from: 'center' }),
+        })
+        .add({
+          keyframes: [
+            {
+              opacity: 1,
+              duration: 1800,
+            },
+            {
+              translateX: 0,
+              translateY: -10,
+              scale: 4,
+              opacity: 0.5,
+            },
+            {
+              translateY: 0,
+              opacity: 1,
+              scaleY: 4,
+              scaleX: 1,
+              rotate: (_: any, i: number) => 1 * i,
+              duration: 2000,
+              delay: anime.stagger(10, { grid: grid, from: 'center' }),
+            },
+            {
+              translateY: 0,
+              opacity: (_: any, i: number) => anime.random(0, 1),
+              scaleY: 1,
+              scaleX: 1,
+              duration: 1800,
+              scale: 1,
+              delay: anime.stagger(30, { grid: grid, from: 'center' }),
+            },
+          ],
+          duration: 3000,
+          easing: 'easeOutElastic(1, .8)',
+          delay: anime.stagger(100, { grid: grid, from: 'center' }),
+        })
+        .add({
+          opacity: [
+            { value: 1, easing: 'easeOutSine', duration: 400 },
+            { value: 0.1, easing: 'easeInOutQuad', duration: 20 },
+          ],
+          duration: 2000,
+          delay: anime.stagger(20, { grid: grid, from: 'center' }),
+        })
+        .add({
+          opacity: [
+            { value: 1, easing: 'easeOutSine', duration: 150 },
+            { value: 0.1, easing: 'easeInOutQuad', duration: 200 },
+          ],
+          duration: 1000,
+          delay: anime.stagger(50, { grid: grid, from: 'center' }),
+        })
+        .add({
+          scale: 1,
+          translateX: 0,
+          translateY: 0,
+          opacity: 1,
+          duration: 2000,
+          rotate: anime.stagger(0, { grid: grid, from: 'center' }),
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+        .add({
+          translateX: 0,
+          translateY: 0,
+          scaleY: 6,
+          scaleX: 1,
+          // rotate: 180,
+          duration: 2000,
+          opacity: 1,
+          delay: anime.stagger(50, { grid: grid, from: 'center' }),
+        })
+        .add({
+          // rotate: anime.stagger([90, 0], { grid: grid, from: 'center' }),
+          scale: 10,
+          duration: 3000,
+          delay: anime.stagger(100, { grid: grid, from: 'center' }),
+        })
+        .add({
+          scaleY: anime.stagger(1.5, { grid: grid, from: 'center' }),
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+        .add({
+          translateX: 0,
+          translateY: 0,
+          scaleX: 1,
+          rotate: 180,
+          duration: 2000,
+          delay: anime.stagger(50, { grid: grid, from: 'center' }),
+        })
+        .add({
+          translateX: anime.stagger('.25rem', { grid: grid, from: 'center', axis: 'x' }),
+          translateY: anime.stagger('.25rem', { grid: grid, from: 'center', axis: 'y' }),
+          rotate: 0,
+          scaleX: 1,
+          scaleY: 1.25,
+          duration: 2000,
+          delay: anime.stagger(1, { from: 'center' }),
+        })
+        .add({
+          translateX: [
+            { value: anime.stagger('-.1rem', { grid: grid, from: 'center', axis: 'x' }) },
+            { value: anime.stagger('.1rem', { grid: grid, from: 'center', axis: 'x' }) },
+          ],
+          translateY: [
+            { value: anime.stagger('-.1rem', { grid: grid, from: 'center', axis: 'y' }) },
+            { value: anime.stagger('.1rem', { grid: grid, from: 'center', axis: 'y' }) },
+          ],
+          duration: 2000,
+          scale: 1.5,
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+        .add({
+          scale: 1,
+          rotate: () => anime.random(-10, 180),
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+        .add({
+          scale: 1,
+          opacity: 1,
+          translateX: 0,
+          translateY: 0,
+          rotate: 0,
+          duration: 1000,
+          delay: anime.stagger(10, { grid: grid, from: 'center' }),
+        })
+      // .add({
+      //   translateX: [
+      //     {value: anime.stagger('-.1rem', {grid: grid, from: 'center', axis: 'x'}) },
+      //     {value: anime.stagger('.1rem', {grid: grid, from: 'center', axis: 'x'}) }
+      //   ],
+      //   translateY: [
+      //     {value: anime.stagger('-.1rem', {grid: grid, from: 'center', axis: 'y'}) },
+      //     {value: anime.stagger('.1rem', {grid: grid, from: 'center', axis: 'y'}) }
+      //   ],
+      //   duration: 400,
+      //   scale: .5,
+      //   delay: anime.stagger(20, {grid: grid, from: 'center'})
+      // })
+      // .add({
+      //   translateX: () => anime.random(-10, 10),
+      //   translateY: () => anime.random(-10, 10),
+      //   delay: anime.stagger(1, {from: 'last'})
+      // })
+      // .add({
+      //   translateX: anime.stagger('.25rem', {grid: grid, from: 'center', axis: 'x'}),
+      //   translateY: anime.stagger('.25rem', {grid: grid, from: 'center', axis: 'y'}),
+      //   rotate: 0,
+      //   scaleX: 2.5,
+      //   scaleY: .25,
+      //   delay: anime.stagger(1, {from: 'center'})
+      // })
+      // .add({
+      //   rotate: anime.stagger([90, 0], {grid: grid, from: 'center'}),
+      //   delay: anime.stagger(10, {grid: grid, from: 'center'})
+      // })
+      // .add({
+      //   translateX: 0,
+      //   translateY: 0,
+      //   scale: .5,
+      //   scaleX: 1,
+      //   rotate: 180,
+      //   duration: 1000,
+      //   delay: anime.stagger(50, {grid: grid, from: 'center'})
+      // })
+      // .add({
+      //   scaleY: 1,
+      //   scale: 1,
+      //   delay: anime.stagger(20, {grid: grid, from: 'center'})
+      // })
+
+      tl.play()
+      // setTimeline(tl)
+    }, 1000)
   }, [])
 
   const selectRandom = (amount: number) => {
@@ -308,7 +309,7 @@ const LW11Canvas = () => {
     return Math.round(randomNumber)
   }
 
-  // if (!mounted) return null
+  if (!mounted) return null
 
   return (
     <DefaultLayout className="overflow-none">
@@ -316,20 +317,17 @@ const LW11Canvas = () => {
         <div className="mx-auto relative w-full"></div>
       </SectionContainer>
       <div className="absolute flex items-center justify-center object-center -top-4 mx-auto w-screen h-screen overflow-hidden">
-        <div className="absolute z-40 left-4 top-4 bg-overlay rounded border p-4">
-          {/* <p>
-          Current sequence: #{sequenceIndex} - {SEQUENCE[sequenceIndex]}
-        </p> */}
+        {/* <div className="absolute z-40 left-4 top-4 bg-overlay rounded border p-4">
           <div className="flex gap-2">
-            <Button onClick={() => tl.play()}>Play</Button>
-            <Button onClick={() => tl.pause()} type="default">
+            <Button onClick={() => timeline?.play()}>Play</Button>
+            <Button onClick={() => timeline?.pause()} type="default">
               Pause
             </Button>
-            <Button onClick={() => tl.restart()} type="default">
+            <Button onClick={() => timeline?.restart()} type="default">
               Restart
             </Button>
           </div>
-        </div>
+        </div> */}
         <div
           style={{ gridTemplateColumns: `repeat(${GRID_WIDTH}, 1fr)` }}
           className="grid-container object-center grid w-full h-full items-center justify-center"
