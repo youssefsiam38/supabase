@@ -1,14 +1,26 @@
-export function Dot(x, y, w, h) {
+export function Dot(x, y, w, h, animationConfig) {
   this.x = x
   this.y = y
   this.w = w
   this.h = h
+  this.anim = animationConfig
+  this.isVert = this.anim?.direction === 'vertical'
 
   this.draw = function (c, clock) {
-    c?.fillRect(this.x, this.y, this.w, this.h)
-    c?.fill()
-    // this.x += clock / 10000
-    // c?.fillStyle = '#fff'
+    c.fillRect(this.x, this.y, this.w, this.h)
+    c.fillStyle = '#ffffff'
+
+    c.fill()
+    if (this.anim) {
+      const speed = clock / (this.anim.speed * 2000)
+      const oscillationWidth = this.anim.oscillation * 2
+      const anim = (this.anim.isReverse ? Math.cos(speed) : Math.sin(speed)) * oscillationWidth
+      if (this.isVert) {
+        this.x += anim
+      } else {
+        this.y += anim
+      }
+    }
   }
 
   this.update = function (c, clock) {
