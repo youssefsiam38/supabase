@@ -47,7 +47,7 @@ const ParticlesCanvas = () => {
       () => (
         <meshPhysicalMaterial
           color={config.color}
-          blending={config.particlesBlending ? AdditiveBlending : undefined}
+          blending={config.particlesBlending && AdditiveBlending}
         />
       ),
       []
@@ -58,7 +58,7 @@ const ParticlesCanvas = () => {
         <meshPhysicalMaterial
           color={config.colorGold}
           metalness={35}
-          blending={config.particlesBlending ? AdditiveBlending : undefined}
+          blending={config.particlesBlending && AdditiveBlending}
         />
       ),
       []
