@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import anime from 'animejs'
 import { isBrowser } from 'common'
 import { debounce } from 'lodash'
 import DefaultLayout from '~/components/Layouts/Default'
-import { Dot } from '~/components/LaunchWeek/11/Dot2'
+// import { Dot } from '~/components/LaunchWeek/11/Dot4'
+import { Button } from 'ui'
+import { useAnimationFrame } from 'framer-motion'
 
 const defaultConfig = {
   dotGrid: 15,
@@ -25,6 +27,8 @@ const LW11 = () => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const [size, setSize] = useState({ w: 1200, h: 800 })
   const [config, setConfig] = useState(defaultConfig)
+  const [showSettings, setShowSettings] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
   const DOT_AREA = config.dotGrid
   let GRID_COLS = Math.floor(canvasRef.current?.getBoundingClientRect().width! / DOT_AREA)
@@ -32,8 +36,9 @@ const LW11 = () => {
   const c = canvasRef.current?.getContext('2d')
 
   let dotsArray: any[] = []
+  const mouse = { x: 0, y: 0 }
 
-  function init() {
+  const init = () => {
     if (!c) return
     c.clearRect(0, 0, window.innerWidth, window.innerHeight)
     dotsArray = []
@@ -43,45 +48,15 @@ const LW11 = () => {
 
     for (let i = 0; i < GRID_COLS; i++) {
       for (let j = 0; j < GRID_ROWS; j++) {
-        const isLarge = Math.random() > config.percentageLarge
-        const isAnimated = isLarge || Math.random() > config.percentageAnimated
-        const direction = isAnimated ? (Math.random() > 0.5 ? 'vertical' : 'horizontal') : undefined
-        const speed = isAnimated ? anime.random(config.minSpeed, config.maxSpeed) : undefined
-        const opacity = isLarge ? 1 : anime.random(0, 1)
-        const isReverse = isAnimated ? Math.random() > 0.5 : undefined
-        const oscillation = isAnimated
-          ? anime.random(config.minOscillation, config.maxOscillation).toFixed()
-          : undefined
-        const dotSize = isLarge
-          ? Math.random() * config.randomizeLargeDots
-          : Math.random() * config.randomizeSmallDots
-        const endPos = {
-          x: anime
-            .random(
-              DOT_AREA * 1 - DOT_AREA / 2 + dotSize / 2,
-              DOT_AREA * 10 - DOT_AREA / 2 + dotSize / 2
-            )
-            .toFixed(),
-          y: anime
-            .random(
-              DOT_AREA * 1 - DOT_AREA / 2 + dotSize / 2,
-              DOT_AREA * 10 - DOT_AREA / 2 + dotSize / 2
-            )
-            .toFixed(),
-        }
-        const delay = anime.random(config.minDelay, config.maxDelay)
-        const duration = anime.random(config.minDuration, config.maxDuration)
-        const animationConfig: any = isAnimated
-          ? {
-              direction,
-              speed,
-              isReverse,
-              oscillation,
-              endPos,
-              delay,
-              duration,
-            }
-          : undefined
+        // const isLarge = Math.random() > config.percentageLarge
+        // const isAnimated = isLarge || Math.random() > config.percentageAnimated
+        // const opacity = isLarge ? 1 : anime.random(0, 1)
+        // const isReverse = isAnimated ? Math.random() > 0.5 : undefined
+        const isLarge = false
+        const isAnimated = false
+
+        const dotSize = 1
+
         const x =
           (canvasRef.current?.getBoundingClientRect().width! / GRID_COLS) * i +
           DOT_AREA / 2 -
@@ -92,12 +67,26 @@ const LW11 = () => {
           dotSize / 2
         const w = dotSize
         const h = dotSize
+        const id = i + '-' + j
 
-        dotsArray.push(new Dot(x, y, w, h, opacity, animationConfig))
+        // @ts-ignore
+        dotsArray.push(new Dot(id, x, y, w, h))
       }
     }
 
+    c?.clearRect(0, 0, size.w, size.h)
+
+    for (let i = 0; i < dotsArray.length; i++) {
+      dotsArray[i].update(c, 0)
+    }
+
     animate(0)
+  }
+
+  function drawGrid(clock: number = 0) {
+    for (let i = 0; i < dotsArray.length; i++) {
+      dotsArray[i].draw(c, clock)
+    }
   }
 
   const handleSetConfig = (name: string, value: any) => {
@@ -108,7 +97,7 @@ const LW11 = () => {
     // if (!isSandbox) return
     const dat = await import('dat.gui')
     const gui = new dat.GUI()
-    gui.width = 200
+    gui.width = 500
 
     gui
       .add(config, 'dotGrid')
@@ -164,6 +153,10 @@ const LW11 = () => {
       .onChange((v) => handleSetConfig('maxDuration', v))
   }
 
+  useAnimationFrame((clock) => {
+    animate(clock)
+  })
+
   function animate(clock?: number) {
     if (!isBrowser) return
 
@@ -173,28 +166,76 @@ const LW11 = () => {
       dotsArray[i].update(c, clock)
     }
 
-    const tl = anime
-      .timeline({
-        targets: dotsArray.filter((dot) => dot.anim),
-        loop: true,
-        direction: 'alternate',
-        autoplay: true,
-        update: renderParticule,
-      })
-      .add(
-        {
-          x: (p: any) =>
-            !p.isVert ? `${p.anim?.isReverse ? '+' : '-'}=${DOT_AREA * p.anim.oscillation}` : p.x,
-          y: (p: any) =>
-            p.isVert ? `${p.anim?.isReverse ? '+' : '-'}=${DOT_AREA * p.anim.oscillation}` : p.y,
-          duration: (p: any) => p.anim?.duration,
-          delay: (p: any) => p.anim?.delay - 1000,
-          easing: 'easeInOutExpo',
-        },
-        '-=1000'
-      )
+    // const tl = anime
+    //   .timeline({
+    //     targets: dotsArray.filter((dot) => dot.anim),
+    //     loop: true,
+    //     direction: 'alternate',
+    //     autoplay: true,
+    //     update: renderParticule,
+    //   })
+    //   .add(
+    //     {
+    //       x: (p: any) =>
+    //         !p.isVert ? `${p.anim?.isReverse ? '+' : '-'}=${DOT_AREA * p.anim.oscillation}` : p.x,
+    //       y: (p: any) =>
+    //         p.isVert ? `${p.anim?.isReverse ? '+' : '-'}=${DOT_AREA * p.anim.oscillation}` : p.y,
+    //       duration: (p: any) => p.anim?.duration,
+    //       delay: (p: any) => p.anim?.delay - 1000,
+    //       easing: 'easeInOutExpo',
+    //     },
+    //     '-=1000'
+    //   )
 
-    tl.play()
+    // tl.play()
+  }
+
+  function Dot(id: string, x: number, y: number, w: number, h: number) {
+    // @ts-ignore
+    this.id = id
+    // @ts-ignore
+    this.x = x
+    // @ts-ignore
+    this.y = y
+    // @ts-ignore
+    this.w = w
+    // @ts-ignore
+    this.h = h
+
+    // @ts-ignore
+    this.draw = function (c, clock) {
+      c.fillRect(this.x, this.y, this.w, this.h)
+      c.fillStyle = `rgba(255,255,255,1)`
+      c.fill()
+    }
+
+    // @ts-ignore
+    this.update = function (c, clock) {
+      // interactivity
+      // if (!mouse) return
+      this.draw(c, clock)
+      const INTERACTIVITY_RADIUS = 100
+      if (
+        mousePos.x - INTERACTIVITY_RADIUS / 2 - this.x < INTERACTIVITY_RADIUS &&
+        mousePos.x - INTERACTIVITY_RADIUS / 2 - this.x > -INTERACTIVITY_RADIUS &&
+        mousePos.y - INTERACTIVITY_RADIUS / 2 - this.y < INTERACTIVITY_RADIUS &&
+        mousePos.y - INTERACTIVITY_RADIUS / 2 - this.y > -INTERACTIVITY_RADIUS
+      ) {
+        // anime({ target: this, w: '+=20', loop: 'true', direction: 'alternate' })
+        if (this.w < 10) {
+          this.x -= 0.5
+          this.y -= 0.5
+          this.w += 1
+          this.h += 1
+          console.log('growing', this.id, this.w)
+        }
+      } else if (this.w > 2) {
+        this.w -= 0.5
+        this.h -= 0.5
+        this.x += 1
+        this.y += 1
+      }
+    }
   }
 
   function renderParticule(anim: any) {
@@ -222,16 +263,33 @@ const LW11 = () => {
     return () => window.removeEventListener('resize', handleDebouncedResize)
   }, [])
 
+  function handleMouseMove(e: MouseEvent) {
+    setMousePos({ x: e.x, y: e.y })
+    mouse.x = e.x
+    mouse.y = e.y
+  }
+
   useEffect(() => {
     resize()
     init()
-    initGUI()
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
   init()
 
   return (
     <DefaultLayout>
+      {/* <Button
+        type="default"
+        className="absolute z-20 left-4 top-4"
+        onClick={() => setShowSettings(!showSettings)}
+      >
+        {showSettings ? 'Hide' : 'Show'} settings
+      </Button> */}
       <canvas
         ref={canvasRef}
         className="opacity-0 animate-fade-in duration-1000 w-full h-full"

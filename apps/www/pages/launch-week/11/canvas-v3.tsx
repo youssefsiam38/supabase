@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import anime from 'animejs'
 import { isBrowser } from 'common'
 import { debounce } from 'lodash'
 import DefaultLayout from '~/components/Layouts/Default'
-import { Dot } from '~/components/LaunchWeek/11/Dot2'
+import { Dot } from '~/components/LaunchWeek/11/Dot3'
+import { Button } from 'ui'
+import { useAnimationFrame } from 'framer-motion'
 
 const defaultConfig = {
   dotGrid: 15,
@@ -25,6 +27,8 @@ const LW11 = () => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const [size, setSize] = useState({ w: 1200, h: 800 })
   const [config, setConfig] = useState(defaultConfig)
+  const [showSettings, setShowSettings] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
   const DOT_AREA = config.dotGrid
   let GRID_COLS = Math.floor(canvasRef.current?.getBoundingClientRect().width! / DOT_AREA)
@@ -33,7 +37,9 @@ const LW11 = () => {
 
   let dotsArray: any[] = []
 
-  function init() {
+  const mouse = { x: 0, y: 0 }
+
+  const init = React.useCallback(() => {
     if (!c) return
     c.clearRect(0, 0, window.innerWidth, window.innerHeight)
     dotsArray = []
@@ -43,12 +49,16 @@ const LW11 = () => {
 
     for (let i = 0; i < GRID_COLS; i++) {
       for (let j = 0; j < GRID_ROWS; j++) {
-        const isLarge = Math.random() > config.percentageLarge
-        const isAnimated = isLarge || Math.random() > config.percentageAnimated
+        // const isLarge = Math.random() > config.percentageLarge
+        // const isAnimated = isLarge || Math.random() > config.percentageAnimated
+        // const opacity = isLarge ? 1 : anime.random(0, 1)
+        // const isReverse = isAnimated ? Math.random() > 0.5 : undefined
+        const isLarge = false
+        const isAnimated = false
         const direction = isAnimated ? (Math.random() > 0.5 ? 'vertical' : 'horizontal') : undefined
         const speed = isAnimated ? anime.random(config.minSpeed, config.maxSpeed) : undefined
-        const opacity = isLarge ? 1 : anime.random(0, 1)
-        const isReverse = isAnimated ? Math.random() > 0.5 : undefined
+        const opacity = 1
+        const isReverse = false
         const oscillation = isAnimated
           ? anime.random(config.minOscillation, config.maxOscillation).toFixed()
           : undefined
@@ -92,13 +102,14 @@ const LW11 = () => {
           dotSize / 2
         const w = dotSize
         const h = dotSize
+        const id = i + '-' + j
 
-        dotsArray.push(new Dot(x, y, w, h, opacity, animationConfig))
+        dotsArray.push(new Dot(id, x, y, w, h, opacity, animationConfig, mousePos))
       }
     }
 
     animate(0)
-  }
+  }, [mousePos])
 
   const handleSetConfig = (name: string, value: any) => {
     setConfig((prevConfig: any) => ({ ...prevConfig, [name]: value }))
@@ -108,7 +119,7 @@ const LW11 = () => {
     // if (!isSandbox) return
     const dat = await import('dat.gui')
     const gui = new dat.GUI()
-    gui.width = 200
+    gui.width = 500
 
     gui
       .add(config, 'dotGrid')
@@ -164,6 +175,10 @@ const LW11 = () => {
       .onChange((v) => handleSetConfig('maxDuration', v))
   }
 
+  useAnimationFrame((clock) => {
+    animate(clock)
+  })
+
   function animate(clock?: number) {
     if (!isBrowser) return
 
@@ -173,28 +188,28 @@ const LW11 = () => {
       dotsArray[i].update(c, clock)
     }
 
-    const tl = anime
-      .timeline({
-        targets: dotsArray.filter((dot) => dot.anim),
-        loop: true,
-        direction: 'alternate',
-        autoplay: true,
-        update: renderParticule,
-      })
-      .add(
-        {
-          x: (p: any) =>
-            !p.isVert ? `${p.anim?.isReverse ? '+' : '-'}=${DOT_AREA * p.anim.oscillation}` : p.x,
-          y: (p: any) =>
-            p.isVert ? `${p.anim?.isReverse ? '+' : '-'}=${DOT_AREA * p.anim.oscillation}` : p.y,
-          duration: (p: any) => p.anim?.duration,
-          delay: (p: any) => p.anim?.delay - 1000,
-          easing: 'easeInOutExpo',
-        },
-        '-=1000'
-      )
+    // const tl = anime
+    //   .timeline({
+    //     targets: dotsArray.filter((dot) => dot.anim),
+    //     loop: true,
+    //     direction: 'alternate',
+    //     autoplay: true,
+    //     update: renderParticule,
+    //   })
+    //   .add(
+    //     {
+    //       x: (p: any) =>
+    //         !p.isVert ? `${p.anim?.isReverse ? '+' : '-'}=${DOT_AREA * p.anim.oscillation}` : p.x,
+    //       y: (p: any) =>
+    //         p.isVert ? `${p.anim?.isReverse ? '+' : '-'}=${DOT_AREA * p.anim.oscillation}` : p.y,
+    //       duration: (p: any) => p.anim?.duration,
+    //       delay: (p: any) => p.anim?.delay - 1000,
+    //       easing: 'easeInOutExpo',
+    //     },
+    //     '-=1000'
+    //   )
 
-    tl.play()
+    // tl.play()
   }
 
   function renderParticule(anim: any) {
@@ -222,16 +237,34 @@ const LW11 = () => {
     return () => window.removeEventListener('resize', handleDebouncedResize)
   }, [])
 
+  function handleMouseMove(e: MouseEvent) {
+    setMousePos({ x: e.x, y: e.y })
+    mouse.x = e.x
+    mouse.y = e.y
+
+    // animate(0)
+  }
+
   useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove)
     resize()
     init()
-    initGUI()
+    // initGUI()
+
+    return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
   init()
 
   return (
     <DefaultLayout>
+      {/* <Button
+        type="default"
+        className="absolute z-20 left-4 top-4"
+        onClick={() => setShowSettings(!showSettings)}
+      >
+        {showSettings ? 'Hide' : 'Show'} settings
+      </Button> */}
       <canvas
         ref={canvasRef}
         className="opacity-0 animate-fade-in duration-1000 w-full h-full"

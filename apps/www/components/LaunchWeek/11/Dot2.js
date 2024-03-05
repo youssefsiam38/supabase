@@ -1,15 +1,16 @@
-export function Dot(x, y, w, h, animationConfig) {
+export function Dot(x, y, w, h, opacity, animationConfig) {
   this.x = x
   this.y = y
   this.w = w
   this.h = h
+  this.opacity = opacity
   this.anim = animationConfig
   this.isVert = this.anim?.direction === 'vertical'
   // this.endPos = { x: this.anim?.speed * 10 ?? 0, y: this.anim?.speed * 10 ?? 0 }
 
   this.draw = function (c, clock) {
     c.fillRect(this.x, this.y, this.w, this.h)
-    c.fillStyle = '#ffffff'
+    c.fillStyle = `rgba(255,255,255,${this.opacity})`
 
     c.fill()
     // if (this.anim) {
