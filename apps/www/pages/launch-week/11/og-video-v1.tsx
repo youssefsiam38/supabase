@@ -535,8 +535,8 @@ const LW11 = () => {
   return (
     <>
       <NextSeo
-        title={'Supabase GA week'}
-        description={'Supabase GA week'}
+        title="Supabase GA week"
+        description="Supabase GA week"
         openGraph={{
           title: 'Supabase GA week',
           description: 'Supabase GA week',
@@ -548,6 +548,14 @@ const LW11 = () => {
               height: CANVAS_CONFIG.h,
               alt: 'Supabase GA week',
               type: 'image/png',
+            },
+            {
+              url: ogVideoPath,
+              secureUrl: ogVideoPath,
+              width: CANVAS_CONFIG.w,
+              height: CANVAS_CONFIG.h,
+              alt: 'Supabase GA week',
+              type: 'video/mp4',
             },
           ],
           videos: [
