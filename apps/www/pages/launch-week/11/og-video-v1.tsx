@@ -5,6 +5,7 @@ import { isBrowser } from 'common'
 import { Button } from 'ui'
 import supabase from '~/lib/supabaseMisc'
 import DefaultLayout from '~/components/Layouts/Default'
+import { NextSeo } from 'next-seo'
 // import { Dot } from '~/components/LaunchWeek/11/Dot2'
 
 const defaultConfig = {
@@ -23,14 +24,26 @@ const defaultConfig = {
   maxDuration: 10000,
 }
 
+const ticketConfig = {
+  id: 1,
+  ticketNumber: '0000004',
+  name: 'Franjesco Sansalvadore',
+  username: 'fsansalvadore',
+}
+
 const LW11 = () => {
+  const OG_VIDEO_DURATION = 6
+  const STORAGE_BUCKET = 'images'
+  const STORAGE_PATH = 'lw11-ga/videos/test/v4'
+
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const [size, setSize] = useState({ w: 1200, h: 600 })
   const [uploadState, setUploadState] = useState('initial')
+  const [ogVideoPath, setOgVideoPath] = useState(
+    `${process.env.NEXT_PUBLIC_MISC_USE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${STORAGE_PATH}`
+  )
   const [config, setConfig] = useState(defaultConfig)
 
-  const STORAGE_BUCKET = 'images'
-  const STORAGE_PATH = 'lw11-ga/videos/test/v3'
   const DOT_AREA = config.dotGrid
   let GRID_COLS = Math.floor(canvasRef.current?.getBoundingClientRect().width! / DOT_AREA)
   let GRID_ROWS = Math.floor(canvasRef.current?.getBoundingClientRect().height! / DOT_AREA)
@@ -46,12 +59,12 @@ const LW11 = () => {
     // const canvas = document.getElementById('lw-canvas')
     // // @ts-ignore
     // c = canvas.getContext('2d')
-    if (!c) return
+    if (!c || !canvas) return
     imageGA = new Image(40)
-    imageGA.src = '/images/launchweek/11-ga/ga-v1.svg'
+    imageGA.src = '/images/launchweek/11-ga/ga-v2.svg'
 
     innerTicketImage = new Image(600)
-    innerTicketImage.src = '/images/launchweek/11-ga/og-inner-ticket.svg'
+    innerTicketImage.src = '/images/launchweek/11-ga/lwga-ticket-2.png'
     c.globalCompositeOperation = 'destination-over'
     c.clearRect(0, 0, window.innerWidth, window.innerHeight)
 
@@ -64,6 +77,7 @@ const LW11 = () => {
     for (let i = 0; i < GRID_COLS; i++) {
       for (let j = 0; j < GRID_ROWS; j++) {
         const isLarge = Math.random() > config.percentageLarge
+        const isGreen = isLarge ? Math.random() > 0.5 : false
         const isAnimated = isLarge || Math.random() > config.percentageAnimated
         const direction = isAnimated ? (Math.random() > 0.5 ? 'vertical' : 'horizontal') : undefined
         const speed = isAnimated ? anime.random(config.minSpeed, config.maxSpeed) : undefined
@@ -115,12 +129,12 @@ const LW11 = () => {
         const id = i + '-' + j
 
         // @ts-ignore
-        dotsArray.push(new Dot(id, x, y, w, h, opacity, animationConfig))
+        dotsArray.push(new Dot(id, x, y, w, h, isGreen, opacity, animationConfig))
       }
     }
 
-    animate(0)
-    drawOgContent()
+    animate()
+    // drawOgContent()
 
     console.log('canvas', c, c.canvas, c.getImageData(0, 0, 100, 100))
   }
@@ -129,19 +143,23 @@ const LW11 = () => {
     setConfig((prevConfig: any) => ({ ...prevConfig, [name]: value }))
   }
 
-  const imageConfig = {
+  const GA_LOGO_CONFIG = {
     x: DOT_AREA * 2 - 2,
-    y: DOT_AREA * 2,
+    y: DOT_AREA * 3,
     fillStyle: '#ffffff',
   }
-  const innerTicketConfig = {
-    x: 600,
-    y: 300,
+  const INNER_TICKET_CONFIG = {
+    x: 500,
+    y: 50,
   }
-
-  const textConfig = {
+  const OG_TEXT_CONFIG = {
     x: DOT_AREA * 2,
     y: DOT_AREA * 11,
+    fillStyle: '#cdcdcd',
+  }
+  const USER_TICKET_CONTENT_CONFIG = {
+    x: 540,
+    y: 260,
     fillStyle: '#ffffff',
   }
 
@@ -150,35 +168,50 @@ const LW11 = () => {
     // const base_image = new Image(40)
     // base_image.src = '/images/launchweek/11-ga/ga-v1.svg'
     // base_image.onload = function () {
-    c.drawImage(imageGA, imageConfig.x, imageConfig.y)
-    c.drawImage(innerTicketImage, innerTicketConfig.x, innerTicketConfig.y)
-    c.font = '28px IBM Plex Mono'
+    c.drawImage(imageGA, GA_LOGO_CONFIG.x, GA_LOGO_CONFIG.y)
+    c.font = '32px IBM Plex Mono'
     // @ts-ignore
-    c.letterSpacing = '10px'
-    c.fillStyle = textConfig.fillStyle
-    c.fillText('APRIL 11', textConfig.x, textConfig.y)
-    c.fillText('10AM PT', textConfig.x, textConfig.y + 40)
+    c.letterSpacing = '16px'
+    c.fillStyle = OG_TEXT_CONFIG.fillStyle
+    c.fillText('APRIL 11', OG_TEXT_CONFIG.x, OG_TEXT_CONFIG.y)
+    c.fillText('10AM PT', OG_TEXT_CONFIG.x, OG_TEXT_CONFIG.y + 40)
+    c.font = '16px IBM Plex Mono'
+    c.fillStyle = '#444444'
+    c.fillText(
+      `N. ${ticketConfig.ticketNumber}`,
+      USER_TICKET_CONTENT_CONFIG.x,
+      USER_TICKET_CONTENT_CONFIG.y
+    )
+    c.font = '42px IBM Plex Mono'
+    c.fillStyle = OG_TEXT_CONFIG.fillStyle
+    // @ts-ignore
+    c.letterSpacing = '0px'
+    ticketConfig.name
+      .split(' ')
+      .map((text, i) =>
+        c.fillText(text, USER_TICKET_CONTENT_CONFIG.x, USER_TICKET_CONTENT_CONFIG.y + 80 + i * 48)
+      )
+    c.drawImage(innerTicketImage, INNER_TICKET_CONFIG.x, INNER_TICKET_CONFIG.y)
 
     anime
       .timeline({
-        // targets: textConfig,
         loop: false,
         autoplay: true,
         direction: 'normal',
       })
+      // .add(
+      //   {
+      //     targets: GA_LOGO_CONFIG,
+      //     y: (v: any) => [v.y - 500, v.y],
+      //     duration: 1000,
+      //     delay: 0,
+      //     easing: 'easeInOutExpo',
+      //   },
+      //   0
+      // )
       .add(
         {
-          targets: imageConfig,
-          y: (v: any) => [v.y - 500, v.y],
-          duration: 1000,
-          delay: 0,
-          easing: 'easeInOutExpo',
-        },
-        0
-      )
-      .add(
-        {
-          targets: innerTicketConfig,
+          targets: INNER_TICKET_CONFIG,
           y: (v: any) => [v.y + 600, v.y],
           duration: 1000,
           delay: 0,
@@ -186,32 +219,54 @@ const LW11 = () => {
         },
         0
       )
-      .add({
-        targets: imageConfig,
-        x: (v: any) => v.x,
-        y: (v: any) => v.y,
-        duration: 10000,
-        delay: 0,
-        loop: false,
-        easing: 'linear',
-      })
       .add(
         {
-          targets: textConfig,
-          x: (v: any) => [v.x - 300, v.x],
+          targets: USER_TICKET_CONTENT_CONFIG,
+          y: (v: any) => [v.y + 600, v.y],
           duration: 1000,
           delay: 0,
-          loop: false,
           easing: 'easeInOutExpo',
         },
         0
       )
+      // .add({
+      //   targets: GA_LOGO_CONFIG,
+      //   x: (v: any) => v.x,
+      //   y: (v: any) => v.y,
+      //   duration: 10000,
+      //   delay: 0,
+      //   loop: false,
+      //   easing: 'linear',
+      // })
+      // .add(
+      //   {
+      //     targets: OG_TEXT_CONFIG,
+      //     x: (v: any) => [v.x - 300, v.x],
+      //     duration: 1000,
+      //     delay: 0,
+      //     loop: false,
+      //     easing: 'easeInOutExpo',
+      //   },
+      //   0
+      // )
+      // .add(
+      //   {
+      //     targets: OG_TEXT_CONFIG,
+      //     x: (v: any) => v.x,
+      //     y: (v: any) => v.y,
+      //     duration: 10000,
+      //     delay: 0,
+      //     loop: false,
+      //     easing: 'linear',
+      //   },
+      //   1000
+      // )
       .add(
         {
-          targets: textConfig,
+          targets: INNER_TICKET_CONFIG,
           x: (v: any) => v.x,
           y: (v: any) => v.y,
-          duration: 10000,
+          duration: 30000,
           delay: 0,
           loop: false,
           easing: 'linear',
@@ -220,18 +275,16 @@ const LW11 = () => {
       )
       .add(
         {
-          targets: innerTicketConfig,
+          targets: USER_TICKET_CONTENT_CONFIG,
           x: (v: any) => v.x,
           y: (v: any) => v.y,
-          duration: 10000,
+          duration: 30000,
           delay: 0,
           loop: false,
           easing: 'linear',
         },
         1000
       )
-    // .play()
-    // }
   }
 
   async function initGUI() {
@@ -294,14 +347,15 @@ const LW11 = () => {
       .onChange((v) => handleSetConfig('maxDuration', v))
   }
 
-  function animate(clock?: number) {
+  function animate() {
     if (!isBrowser) return
 
-    c?.clearRect(0, 0, size.w, size.h)
+    // c?.clearRect(0, 0, size.w, size.h)
 
     for (let i = 0; i < dotsArray.length; i++) {
-      dotsArray[i].update(c, clock)
+      dotsArray[i].update(c)
     }
+
     drawOgContent()
 
     const tl = anime
@@ -329,16 +383,18 @@ const LW11 = () => {
   }
 
   function renderParticule(anim: any) {
-    if (!isBrowser) return
+    if (!isBrowser || !c) return
 
-    c?.clearRect(0, 0, size.w, size.h)
+    c.clearRect(0, 0, size.w, size.h)
+    drawOgContent()
     for (let i = 0; i < dotsArray.length; i++) {
       dotsArray[i].update(c, 0)
     }
     for (var i = 0; i < anim.animatables.length; i++) {
       anim.animatables[i].target.update(c, 0)
     }
-    drawOgContent()
+    c.fillStyle = '#0F0F0F'
+    c.fillRect(0, 0, 1200, 600)
   }
 
   function resize() {
@@ -352,6 +408,7 @@ const LW11 = () => {
     y: number,
     w: number,
     h: number,
+    isGreen: boolean,
     opacity: number,
     animationConfig: any
   ) {
@@ -366,6 +423,8 @@ const LW11 = () => {
     // @ts-ignore
     this.h = h
     // @ts-ignore
+    this.isGreen = isGreen
+    // @ts-ignore
     this.opacity = opacity
     // @ts-ignore
     this.anim = animationConfig
@@ -374,15 +433,15 @@ const LW11 = () => {
     // this.endPos = { x: this.anim?.speed * 10 ?? 0, y: this.anim?.speed * 10 ?? 0 }
 
     // @ts-ignore
-    this.draw = function (c, clock) {
+    this.draw = function (c) {
+      c.fillStyle = this.isGreen ? `#3ECF8E` : `rgba(255,255,255,${this.opacity})`
       c.fillRect(this.x, this.y, this.w, this.h)
-      c.fillStyle = `rgba(255,255,255,${this.opacity})`
       c.fill()
     }
 
     // @ts-ignore
-    this.update = function (c, clock) {
-      this.draw(c, clock)
+    this.update = function (c) {
+      this.draw(c)
     }
   }
 
@@ -395,7 +454,12 @@ const LW11 = () => {
         upsert: true,
       })
 
-    data && setUploadState(`success: ${data.path}`)
+    if (data) {
+      setUploadState(`success: ${data.path}`)
+      setOgVideoPath(
+        `${process.env.NEXT_PUBLIC_MISC_USE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${STORAGE_PATH}`
+      )
+    }
     error && setUploadState(`error: ${error.message}`)
     console.log('upload video', data, error)
   }
@@ -415,7 +479,7 @@ const LW11 = () => {
     }
 
     rec.start()
-    setTimeout(() => rec.stop(), 10000)
+    setTimeout(() => rec.stop(), OG_VIDEO_DURATION * 1000)
   }
 
   useEffect(() => {
@@ -427,37 +491,67 @@ const LW11 = () => {
   }, [])
 
   useEffect(() => {
-    resize()
-    init()
+    setTimeout(() => {
+      resize()
+      init()
+    }, 100)
     // initGUI()
   }, [])
 
   init()
 
+  console.log('ogVideoPath', ogVideoPath)
+
   return (
-    <DefaultLayout>
-      <div className="absolute z-20 left-4 top-4 bg-alternative border rounded-lg p-4 shadow flex flex-col gap-2">
-        <Button onClick={record}>Start recording</Button>
-        <p className="text-sm text-foreground-light">
-          {uploadState === 'initial'
-            ? '-'
-            : uploadState === 'recording'
-              ? 'recording...'
-              : uploadState === 'uploading'
-                ? 'uploading'
-                : uploadState}
-        </p>
-      </div>
-      <div className="relative flex items-center justify-center w-full h-full">
-        <canvas
-          ref={canvasRef}
-          id="lw-canvas"
-          className="opacity-0 animate-fade-in duration-1000 w-[1200px] h-[600px] border"
-          width={size.w}
-          height={size.h}
-        />
-      </div>
-    </DefaultLayout>
+    <>
+      <NextSeo
+        title={'Supabase GA week'}
+        description={'Supabase GA week'}
+        openGraph={{
+          title: 'Supabase GA week',
+          description: 'Supabase GA week',
+          url: 'https://supabase.com/launch-week',
+          // images: [
+          //   {
+          //     url: "OG_IMAGE",
+          //   },
+          // ],
+          videos: [
+            {
+              url: ogVideoPath,
+              width: 1200,
+              height: 600,
+              alt: 'Supabase GA week',
+              // type:
+            },
+          ],
+        }}
+      />
+      <DefaultLayout>
+        <div className="absolute z-20 left-4 top-4 bg-alternative border rounded-lg p-4 shadow flex flex-col gap-2">
+          <Button onClick={record}>Start recording</Button>
+          <p className="text-sm text-foreground-light">
+            {uploadState === 'initial'
+              ? '-'
+              : uploadState === 'recording'
+                ? 'recording...'
+                : uploadState === 'uploading'
+                  ? 'uploading'
+                  : uploadState}
+          </p>
+        </div>
+        <div className="relative flex items-center justify-center w-full h-full overflow-hidden">
+          <canvas
+            ref={canvasRef}
+            id="lw-canvas"
+            // className="absolute left-[-9999] opacity-0 animate-fade-in duration-1000 w-[1200px] h-[600px] border"
+            className="opacity-0 animate-fade-in duration-1000 w-[1200px] h-[600px] border"
+            width={size.w}
+            height={size.h}
+          />
+        </div>
+      </DefaultLayout>
+    </>
   )
 }
 
