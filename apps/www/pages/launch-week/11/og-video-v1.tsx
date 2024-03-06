@@ -34,7 +34,7 @@ const ticketConfig = {
 const LW11 = () => {
   const OG_VIDEO_DURATION = 6
   const STORAGE_BUCKET = 'images'
-  const STORAGE_PATH = 'lw11-ga/videos/test/v4'
+  const STORAGE_PATH = 'lw11-ga/videos/test/v5.mp4'
 
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const [size, setSize] = useState({ w: 1200, h: 600 })
@@ -475,7 +475,8 @@ const LW11 = () => {
     rec.ondataavailable = (e) => chunks.push(e.data)
     rec.onstop = (e) => {
       console.log('stop recording', rec, chunks)
-      uploadHandler(new Blob(chunks, { type: 'video/webm' }))
+      console.log('chunks', chunks[chunks.length - 1])
+      uploadHandler(new Blob(chunks, { type: 'video/mp4' }))
     }
 
     rec.start()
@@ -522,7 +523,7 @@ const LW11 = () => {
               width: 1200,
               height: 600,
               alt: 'Supabase GA week',
-              // type:
+              type: 'video/mp4',
             },
           ],
         }}
