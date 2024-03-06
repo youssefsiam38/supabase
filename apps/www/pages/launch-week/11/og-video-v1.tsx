@@ -8,6 +8,11 @@ import DefaultLayout from '~/components/Layouts/Default'
 import { NextSeo } from 'next-seo'
 // import { Dot } from '~/components/LaunchWeek/11/Dot2'
 
+const CANVAS_CONFIG = {
+  w: 1200,
+  h: 630,
+}
+
 const defaultConfig = {
   dotGrid: 25,
   percentageLarge: 0.99,
@@ -34,13 +39,17 @@ const ticketConfig = {
 const LW11 = () => {
   const OG_VIDEO_DURATION = 6
   const STORAGE_BUCKET = 'images'
-  const STORAGE_PATH = 'lw11-ga/videos/test/v5.mp4'
+  const STORAGE_PATH = 'lw11-ga/videos/test/og-test-v13'
 
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
-  const [size, setSize] = useState({ w: 1200, h: 600 })
+  const canvasSnapRef = React.useRef<HTMLImageElement>(null)
+  const [size, setSize] = useState({ w: CANVAS_CONFIG.w, h: CANVAS_CONFIG.h })
   const [uploadState, setUploadState] = useState('initial')
+  const [ogImagePath, setOgImagePath] = useState(
+    `${process.env.NEXT_PUBLIC_MISC_USE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${STORAGE_PATH}.png`
+  )
   const [ogVideoPath, setOgVideoPath] = useState(
-    `${process.env.NEXT_PUBLIC_MISC_USE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${STORAGE_PATH}`
+    `${process.env.NEXT_PUBLIC_MISC_USE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${STORAGE_PATH}.mp4`
   )
   const [config, setConfig] = useState(defaultConfig)
 
@@ -63,7 +72,7 @@ const LW11 = () => {
     imageGA = new Image(40)
     imageGA.src = '/images/launchweek/11-ga/ga-v2.svg'
 
-    innerTicketImage = new Image(600)
+    innerTicketImage = new Image(CANVAS_CONFIG.h)
     innerTicketImage.src = '/images/launchweek/11-ga/lwga-ticket-2.png'
     c.globalCompositeOperation = 'destination-over'
     c.clearRect(0, 0, window.innerWidth, window.innerHeight)
@@ -178,7 +187,7 @@ const LW11 = () => {
     c.font = '16px IBM Plex Mono'
     c.fillStyle = '#444444'
     c.fillText(
-      `N. ${ticketConfig.ticketNumber}`,
+      `N.${ticketConfig.ticketNumber}`,
       USER_TICKET_CONTENT_CONFIG.x,
       USER_TICKET_CONTENT_CONFIG.y
     )
@@ -212,7 +221,7 @@ const LW11 = () => {
       .add(
         {
           targets: INNER_TICKET_CONFIG,
-          y: (v: any) => [v.y + 600, v.y],
+          y: (v: any) => [v.y + CANVAS_CONFIG.h, v.y],
           duration: 1000,
           delay: 0,
           easing: 'easeInOutExpo',
@@ -222,7 +231,7 @@ const LW11 = () => {
       .add(
         {
           targets: USER_TICKET_CONTENT_CONFIG,
-          y: (v: any) => [v.y + 600, v.y],
+          y: (v: any) => [v.y + CANVAS_CONFIG.h, v.y],
           duration: 1000,
           delay: 0,
           easing: 'easeInOutExpo',
@@ -287,70 +296,68 @@ const LW11 = () => {
       )
   }
 
-  async function initGUI() {
-    // if (!isSandbox) return
-    const dat = await import('dat.gui')
-    const gui = new dat.GUI()
-    gui.width = 200
+  // async function initGUI() {
+  //   // if (!isSandbox) return
+  //   const dat = await import('dat.gui')
+  //   const gui = new dat.GUI()
+  //   gui.width = 200
 
-    gui
-      .add(config, 'dotGrid')
-      .name('Dot area (px)')
-      .onChange((v) => handleSetConfig('dotGrid', v))
-    gui
-      .add(config, 'percentageLarge')
-      .name('Large dots %')
-      .onChange((v) => handleSetConfig('percentageLarge', v))
-    gui
-      .add(config, 'percentageAnimated')
-      .name('Animatedd dots %')
-      .onChange((v) => handleSetConfig('percentageAnimated', v))
-    gui
-      .add(config, 'randomizeLargeDots')
-      .name('Large Dots size (px)')
-      .onChange((v) => handleSetConfig('randomizeLargeDots', v))
-    gui
-      .add(config, 'randomizeSmallDots')
-      .name('Small Dots size (px)')
-      .onChange((v) => handleSetConfig('randomizeSmallDots', v))
-    gui
-      .add(config, 'minSpeed')
-      .name('Min Speed')
-      .onChange((v) => handleSetConfig('minSpeed', v))
-    gui
-      .add(config, 'maxSpeed')
-      .name('Max Speed')
-      .onChange((v) => handleSetConfig('maxSpeed', v))
-    gui
-      .add(config, 'minOscillation')
-      .name('Min Oscillation (px)')
-      .onChange((v) => handleSetConfig('minOscillation', v))
-    gui
-      .add(config, 'maxOscillation')
-      .name('Max Oscillation (px)')
-      .onChange((v) => handleSetConfig('maxOscillation', v))
-    gui
-      .add(config, 'minDelay')
-      .name('Min Delay (ms)')
-      .onChange((v) => handleSetConfig('minDelay', v))
-    gui
-      .add(config, 'maxDelay')
-      .name('Max Delay (ms)')
-      .onChange((v) => handleSetConfig('maxDelay', v))
-    gui
-      .add(config, 'minDuration')
-      .name('Min Duration (ms)')
-      .onChange((v) => handleSetConfig('minDuration', v))
-    gui
-      .add(config, 'maxDuration')
-      .name('Max Duration (ms)')
-      .onChange((v) => handleSetConfig('maxDuration', v))
-  }
+  //   gui
+  //     .add(config, 'dotGrid')
+  //     .name('Dot area (px)')
+  //     .onChange((v) => handleSetConfig('dotGrid', v))
+  //   gui
+  //     .add(config, 'percentageLarge')
+  //     .name('Large dots %')
+  //     .onChange((v) => handleSetConfig('percentageLarge', v))
+  //   gui
+  //     .add(config, 'percentageAnimated')
+  //     .name('Animatedd dots %')
+  //     .onChange((v) => handleSetConfig('percentageAnimated', v))
+  //   gui
+  //     .add(config, 'randomizeLargeDots')
+  //     .name('Large Dots size (px)')
+  //     .onChange((v) => handleSetConfig('randomizeLargeDots', v))
+  //   gui
+  //     .add(config, 'randomizeSmallDots')
+  //     .name('Small Dots size (px)')
+  //     .onChange((v) => handleSetConfig('randomizeSmallDots', v))
+  //   gui
+  //     .add(config, 'minSpeed')
+  //     .name('Min Speed')
+  //     .onChange((v) => handleSetConfig('minSpeed', v))
+  //   gui
+  //     .add(config, 'maxSpeed')
+  //     .name('Max Speed')
+  //     .onChange((v) => handleSetConfig('maxSpeed', v))
+  //   gui
+  //     .add(config, 'minOscillation')
+  //     .name('Min Oscillation (px)')
+  //     .onChange((v) => handleSetConfig('minOscillation', v))
+  //   gui
+  //     .add(config, 'maxOscillation')
+  //     .name('Max Oscillation (px)')
+  //     .onChange((v) => handleSetConfig('maxOscillation', v))
+  //   gui
+  //     .add(config, 'minDelay')
+  //     .name('Min Delay (ms)')
+  //     .onChange((v) => handleSetConfig('minDelay', v))
+  //   gui
+  //     .add(config, 'maxDelay')
+  //     .name('Max Delay (ms)')
+  //     .onChange((v) => handleSetConfig('maxDelay', v))
+  //   gui
+  //     .add(config, 'minDuration')
+  //     .name('Min Duration (ms)')
+  //     .onChange((v) => handleSetConfig('minDuration', v))
+  //   gui
+  //     .add(config, 'maxDuration')
+  //     .name('Max Duration (ms)')
+  //     .onChange((v) => handleSetConfig('maxDuration', v))
+  // }
 
   function animate() {
     if (!isBrowser) return
-
-    // c?.clearRect(0, 0, size.w, size.h)
 
     for (let i = 0; i < dotsArray.length; i++) {
       dotsArray[i].update(c)
@@ -394,11 +401,11 @@ const LW11 = () => {
       anim.animatables[i].target.update(c, 0)
     }
     c.fillStyle = '#0F0F0F'
-    c.fillRect(0, 0, 1200, 600)
+    c.fillRect(0, 0, CANVAS_CONFIG.w, CANVAS_CONFIG.h)
   }
 
   function resize() {
-    setSize({ w: 1200, h: 600 })
+    setSize({ w: CANVAS_CONFIG.w, h: CANVAS_CONFIG.h })
     init()
   }
 
@@ -449,8 +456,9 @@ const LW11 = () => {
     setUploadState('uploading')
     const { data, error } = await supabase.storage
       .from(STORAGE_BUCKET)
-      .upload(STORAGE_PATH, video, {
+      .upload(STORAGE_PATH + '.mp4', video, {
         // cacheControl: '3600',
+        contentType: 'video/mp4',
         upsert: true,
       })
 
@@ -463,9 +471,26 @@ const LW11 = () => {
     error && setUploadState(`error: ${error.message}`)
     console.log('upload video', data, error)
   }
+  const uploadImage = async (blob: Blob | string) => {
+    const { data: imageData, error: imageError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(STORAGE_PATH + '.png', blob!, {
+        // cacheControl: '3600',
+        contentType: 'image/png',
+        upsert: true,
+      })
+
+    console.log(imageData, imageError)
+
+    if (imageData) {
+      console.log('uploaded image', imageData)
+      setOgImagePath(imageData.path)
+    }
+    imageError && console.log(`error: ${imageError.message}`)
+  }
 
   const record = () => {
-    if (!canvas) return
+    if (!c || !canvas || !canvasSnapRef) return
     console.log('start recording', c)
     setUploadState('recording')
     const chunks: any = []
@@ -473,9 +498,15 @@ const LW11 = () => {
     const rec = new MediaRecorder(stream) // init the recorder
 
     rec.ondataavailable = (e) => chunks.push(e.data)
-    rec.onstop = (e) => {
-      console.log('stop recording', rec, chunks)
-      console.log('chunks', chunks[chunks.length - 1])
+    rec.onstop = () => {
+      canvas.toBlob(
+        (b) => {
+          uploadImage(b!)
+        },
+        'image/png',
+        1
+      )
+
       uploadHandler(new Blob(chunks, { type: 'video/mp4' }))
     }
 
@@ -501,8 +532,6 @@ const LW11 = () => {
 
   init()
 
-  console.log('ogVideoPath', ogVideoPath)
-
   return (
     <>
       <NextSeo
@@ -512,25 +541,21 @@ const LW11 = () => {
           title: 'Supabase GA week',
           description: 'Supabase GA week',
           url: 'https://supabase.com/launch-week',
-          // images: [
-          //   {
-          //     url: "OG_IMAGE",
-          //   },
-          // ],
           images: [
             {
-              url: ogVideoPath,
-              width: 1200,
-              height: 600,
+              url: ogImagePath,
+              width: CANVAS_CONFIG.w,
+              height: CANVAS_CONFIG.h,
               alt: 'Supabase GA week',
-              type: 'video/mp4',
+              type: 'image/png',
             },
           ],
           videos: [
             {
               url: ogVideoPath,
-              width: 1200,
-              height: 600,
+              secureUrl: ogVideoPath,
+              width: CANVAS_CONFIG.w,
+              height: CANVAS_CONFIG.h,
               alt: 'Supabase GA week',
               type: 'video/mp4',
             },
@@ -550,11 +575,10 @@ const LW11 = () => {
                   : uploadState}
           </p>
         </div>
-        <div className="relative flex items-center justify-center w-full h-full overflow-hidden">
+        <div className="relative py-10 gap-4 items-center justify-center w-full h-full overflow-hidden flex flex-col">
           <canvas
             ref={canvasRef}
             id="lw-canvas"
-            // className="absolute left-[-9999] opacity-0 animate-fade-in duration-1000 w-[1200px] h-[600px] border"
             className="opacity-0 animate-fade-in duration-1000 w-[1200px] h-[600px] border"
             width={size.w}
             height={size.h}
