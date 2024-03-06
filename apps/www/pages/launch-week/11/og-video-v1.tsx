@@ -565,7 +565,7 @@ const LW11 = () => {
               width: CANVAS_CONFIG.w,
               height: CANVAS_CONFIG.h,
               alt: 'Supabase GA week',
-              type: 'video/mp4',
+              // type: 'video/mp4',
             },
           ],
         }}
