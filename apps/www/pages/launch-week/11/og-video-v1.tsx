@@ -517,6 +517,15 @@ const LW11 = () => {
           //     url: "OG_IMAGE",
           //   },
           // ],
+          images: [
+            {
+              url: ogVideoPath,
+              width: 1200,
+              height: 600,
+              alt: 'Supabase GA week',
+              type: 'video/mp4',
+            },
+          ],
           videos: [
             {
               url: ogVideoPath,
