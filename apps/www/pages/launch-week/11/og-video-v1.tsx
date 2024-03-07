@@ -6,7 +6,6 @@ import { Button } from 'ui'
 import supabase from '~/lib/supabaseMisc'
 import DefaultLayout from '~/components/Layouts/Default'
 import { NextSeo } from 'next-seo'
-// import { Dot } from '~/components/LaunchWeek/11/Dot2'
 
 const CANVAS_CONFIG = {
   w: 1200,
@@ -14,7 +13,7 @@ const CANVAS_CONFIG = {
 }
 
 const defaultConfig = {
-  dotGrid: 25,
+  dotArea: 30,
   percentageLarge: 0.99,
   percentageAnimated: 0.75,
   randomizeLargeDots: 5,
@@ -53,29 +52,25 @@ const LW11 = () => {
   )
   const [config, setConfig] = useState(defaultConfig)
 
-  const DOT_AREA = config.dotGrid
+  const DOT_AREA = config.dotArea
   let GRID_COLS = Math.floor(canvasRef.current?.getBoundingClientRect().width! / DOT_AREA)
   let GRID_ROWS = Math.floor(canvasRef.current?.getBoundingClientRect().height! / DOT_AREA)
   const canvas = canvasRef.current
-  const c = canvas?.getContext('2d')
-  // let c: any
+  const ctx = canvas?.getContext('2d')
+
   let dotsArray: any[] = []
   let imageGA: HTMLImageElement
   let innerTicketImage: HTMLImageElement
 
   function init() {
-    // if (!isBrowser) return
-    // const canvas = document.getElementById('lw-canvas')
-    // // @ts-ignore
-    // c = canvas.getContext('2d')
-    if (!c || !canvas) return
+    if (!ctx || !canvas) return
     imageGA = new Image(40)
     imageGA.src = '/images/launchweek/11-ga/ga-v2.svg'
 
     innerTicketImage = new Image(CANVAS_CONFIG.h)
     innerTicketImage.src = '/images/launchweek/11-ga/lwga-ticket-2.png'
-    c.globalCompositeOperation = 'destination-over'
-    c.clearRect(0, 0, window.innerWidth, window.innerHeight)
+    ctx.globalCompositeOperation = 'destination-over'
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
 
     // Generate grid
     dotsArray = []
@@ -83,8 +78,8 @@ const LW11 = () => {
     GRID_COLS = Math.floor(canvasRef.current?.getBoundingClientRect().width! / DOT_AREA)
     GRID_ROWS = Math.floor(canvasRef.current?.getBoundingClientRect().height! / DOT_AREA)
 
-    for (let i = 0; i < GRID_COLS; i++) {
-      for (let j = 0; j < GRID_ROWS; j++) {
+    for (let i = 0; i < GRID_COLS + 2; i++) {
+      for (let j = 0; j < GRID_ROWS + 2; j++) {
         const isLarge = Math.random() > config.percentageLarge
         const isGreen = isLarge ? Math.random() > 0.5 : false
         const isAnimated = isLarge || Math.random() > config.percentageAnimated
@@ -143,9 +138,6 @@ const LW11 = () => {
     }
 
     animate()
-    // drawOgContent()
-
-    console.log('canvas', c, c.canvas, c.getImageData(0, 0, 100, 100))
   }
 
   const handleSetConfig = (name: string, value: any) => {
@@ -173,34 +165,32 @@ const LW11 = () => {
   }
 
   const drawOgContent = () => {
-    if (!c) return
-    // const base_image = new Image(40)
-    // base_image.src = '/images/launchweek/11-ga/ga-v1.svg'
-    // base_image.onload = function () {
-    c.drawImage(imageGA, GA_LOGO_CONFIG.x, GA_LOGO_CONFIG.y)
-    c.font = '32px IBM Plex Mono'
+    if (!ctx) return
+
+    ctx.drawImage(imageGA, GA_LOGO_CONFIG.x, GA_LOGO_CONFIG.y)
+    ctx.font = '32px IBM Plex Mono'
     // @ts-ignore
-    c.letterSpacing = '16px'
-    c.fillStyle = OG_TEXT_CONFIG.fillStyle
-    c.fillText('APRIL 11', OG_TEXT_CONFIG.x, OG_TEXT_CONFIG.y)
-    c.fillText('10AM PT', OG_TEXT_CONFIG.x, OG_TEXT_CONFIG.y + 40)
-    c.font = '16px IBM Plex Mono'
-    c.fillStyle = '#444444'
-    c.fillText(
+    ctx.letterSpacing = '16px'
+    ctx.fillStyle = OG_TEXT_CONFIG.fillStyle
+    ctx.fillText('APRIL 11', OG_TEXT_CONFIG.x, OG_TEXT_CONFIG.y)
+    ctx.fillText('10AM PT', OG_TEXT_CONFIG.x, OG_TEXT_CONFIG.y + 40)
+    ctx.font = '16px IBM Plex Mono'
+    ctx.fillStyle = '#444444'
+    ctx.fillText(
       `N.${ticketConfig.ticketNumber}`,
       USER_TICKET_CONTENT_CONFIG.x,
       USER_TICKET_CONTENT_CONFIG.y
     )
-    c.font = '42px IBM Plex Mono'
-    c.fillStyle = OG_TEXT_CONFIG.fillStyle
+    ctx.font = '42px IBM Plex Mono'
+    ctx.fillStyle = OG_TEXT_CONFIG.fillStyle
     // @ts-ignore
-    c.letterSpacing = '0px'
+    ctx.letterSpacing = '0px'
     ticketConfig.name
       .split(' ')
       .map((text, i) =>
-        c.fillText(text, USER_TICKET_CONTENT_CONFIG.x, USER_TICKET_CONTENT_CONFIG.y + 80 + i * 48)
+        ctx.fillText(text, USER_TICKET_CONTENT_CONFIG.x, USER_TICKET_CONTENT_CONFIG.y + 80 + i * 48)
       )
-    c.drawImage(innerTicketImage, INNER_TICKET_CONFIG.x, INNER_TICKET_CONFIG.y)
+    ctx.drawImage(innerTicketImage, INNER_TICKET_CONFIG.x, INNER_TICKET_CONFIG.y)
 
     anime
       .timeline({
@@ -208,16 +198,6 @@ const LW11 = () => {
         autoplay: true,
         direction: 'normal',
       })
-      // .add(
-      //   {
-      //     targets: GA_LOGO_CONFIG,
-      //     y: (v: any) => [v.y - 500, v.y],
-      //     duration: 1000,
-      //     delay: 0,
-      //     easing: 'easeInOutExpo',
-      //   },
-      //   0
-      // )
       .add(
         {
           targets: INNER_TICKET_CONFIG,
@@ -238,38 +218,6 @@ const LW11 = () => {
         },
         0
       )
-      // .add({
-      //   targets: GA_LOGO_CONFIG,
-      //   x: (v: any) => v.x,
-      //   y: (v: any) => v.y,
-      //   duration: 10000,
-      //   delay: 0,
-      //   loop: false,
-      //   easing: 'linear',
-      // })
-      // .add(
-      //   {
-      //     targets: OG_TEXT_CONFIG,
-      //     x: (v: any) => [v.x - 300, v.x],
-      //     duration: 1000,
-      //     delay: 0,
-      //     loop: false,
-      //     easing: 'easeInOutExpo',
-      //   },
-      //   0
-      // )
-      // .add(
-      //   {
-      //     targets: OG_TEXT_CONFIG,
-      //     x: (v: any) => v.x,
-      //     y: (v: any) => v.y,
-      //     duration: 10000,
-      //     delay: 0,
-      //     loop: false,
-      //     easing: 'linear',
-      //   },
-      //   1000
-      // )
       .add(
         {
           targets: INNER_TICKET_CONFIG,
@@ -294,6 +242,48 @@ const LW11 = () => {
         },
         1000
       )
+    // .add(
+    //   {
+    //     targets: GA_LOGO_CONFIG,
+    //     y: (v: any) => [v.y - 500, v.y],
+    //     duration: 1000,
+    //     delay: 0,
+    //     easing: 'easeInOutExpo',
+    //   },
+    //   0
+    // )
+    // .add({
+    //   targets: GA_LOGO_CONFIG,
+    //   x: (v: any) => v.x,
+    //   y: (v: any) => v.y,
+    //   duration: 10000,
+    //   delay: 0,
+    //   loop: false,
+    //   easing: 'linear',
+    // })
+    // .add(
+    //   {
+    //     targets: OG_TEXT_CONFIG,
+    //     x: (v: any) => [v.x - 300, v.x],
+    //     duration: 1000,
+    //     delay: 0,
+    //     loop: false,
+    //     easing: 'easeInOutExpo',
+    //   },
+    //   0
+    // )
+    // .add(
+    //   {
+    //     targets: OG_TEXT_CONFIG,
+    //     x: (v: any) => v.x,
+    //     y: (v: any) => v.y,
+    //     duration: 10000,
+    //     delay: 0,
+    //     loop: false,
+    //     easing: 'linear',
+    //   },
+    //   1000
+    // )
   }
 
   // async function initGUI() {
@@ -303,9 +293,9 @@ const LW11 = () => {
   //   gui.width = 200
 
   //   gui
-  //     .add(config, 'dotGrid')
+  //     .add(config, 'dotArea')
   //     .name('Dot area (px)')
-  //     .onChange((v) => handleSetConfig('dotGrid', v))
+  //     .onChange((v) => handleSetConfig('dotArea', v))
   //   gui
   //     .add(config, 'percentageLarge')
   //     .name('Large dots %')
@@ -360,7 +350,7 @@ const LW11 = () => {
     if (!isBrowser) return
 
     for (let i = 0; i < dotsArray.length; i++) {
-      dotsArray[i].update(c)
+      dotsArray[i].update(ctx)
     }
 
     drawOgContent()
@@ -390,18 +380,18 @@ const LW11 = () => {
   }
 
   function renderParticule(anim: any) {
-    if (!isBrowser || !c) return
+    if (!isBrowser || !ctx) return
 
-    c.clearRect(0, 0, size.w, size.h)
+    ctx.clearRect(0, 0, size.w, size.h)
     drawOgContent()
     for (let i = 0; i < dotsArray.length; i++) {
-      dotsArray[i].update(c, 0)
+      dotsArray[i].update(ctx, 0)
     }
     for (var i = 0; i < anim.animatables.length; i++) {
-      anim.animatables[i].target.update(c, 0)
+      anim.animatables[i].target.update(ctx, 0)
     }
-    c.fillStyle = '#0F0F0F'
-    c.fillRect(0, 0, CANVAS_CONFIG.w, CANVAS_CONFIG.h)
+    ctx.fillStyle = '#0F0F0F'
+    ctx.fillRect(0, 0, CANVAS_CONFIG.w, CANVAS_CONFIG.h)
   }
 
   function resize() {
@@ -440,15 +430,15 @@ const LW11 = () => {
     // this.endPos = { x: this.anim?.speed * 10 ?? 0, y: this.anim?.speed * 10 ?? 0 }
 
     // @ts-ignore
-    this.draw = function (c) {
-      c.fillStyle = this.isGreen ? `#3ECF8E` : `rgba(255,255,255,${this.opacity})`
-      c.fillRect(this.x, this.y, this.w, this.h)
-      c.fill()
+    this.draw = function (ctx) {
+      ctx.fillStyle = this.isGreen ? `#3ECF8E` : `rgba(255,255,255,${this.opacity})`
+      ctx.fillRect(this.x, this.y, this.w, this.h)
+      ctx.fill()
     }
 
     // @ts-ignore
-    this.update = function (c) {
-      this.draw(c)
+    this.update = function (ctx) {
+      this.draw(ctx)
     }
   }
 
@@ -490,8 +480,8 @@ const LW11 = () => {
   }
 
   const record = () => {
-    if (!c || !canvas || !canvasSnapRef) return
-    console.log('start recording', c)
+    if (!ctx || !canvas || !canvasSnapRef) return
+    console.log('start recording', ctx)
     setUploadState('recording')
     const chunks: any = []
     const stream = canvas.captureStream() // grab our canvas MediaStream
