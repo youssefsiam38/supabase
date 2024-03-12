@@ -11,7 +11,7 @@ enum DbStatus {
   Error = 'Error',
 }
 
-const transitionStatus = (db: Db, old: DbStatus, updated: DbStatus) => {
+const transitionStatus = (db: Db, old: DbStatus, updated: DbStatus, options?: object) => {
   if (old === updated) {
     console.warn(`Trying to transition to the current status: ${old}`)
     return old
@@ -19,13 +19,28 @@ const transitionStatus = (db: Db, old: DbStatus, updated: DbStatus) => {
 
   switch (old) {
     case DbStatus.Initializing:
-      if (updated === DbStatus.SettingUp) db.status = updated
+      if (updated === DbStatus.SettingUp) {
+        if (!('dataset' in options)) {
+          throw Error(`Cannot set up database without specifying seed dataset`)
+        }
+        db.status = updated
+        db.dataset = options.dataset as SeedData
+      }
     case DbStatus.Reinitializing:
-      if (updated === DbStatus.SettingUp) db.status = updated
+      if (updated === DbStatus.SettingUp) {
+        if (!('dataset' in options)) {
+          throw Error(`Cannot set up database without specifying seed dataset`)
+        }
+        db.status = updated
+        db.dataset = options.dataset as SeedData
+      }
     case DbStatus.SettingUp:
       if (updated === DbStatus.Ready) db.status = updated
     case DbStatus.Ready:
-      if (updated === DbStatus.Closing) db.status = updated
+      if (updated === DbStatus.Closing) {
+        db.status = updated
+        db.dataset = null
+      }
     case DbStatus.Closing:
       if (updated === DbStatus.Closed) db.status = updated
     case DbStatus.Closed:
@@ -46,11 +61,51 @@ const seedMap: Record<SeedData, Sql> = {
   [SeedData.Countries]: countriesSeed,
 }
 
-interface Db {
+type Callback = () => void
+type Unsubscribe = () => void
+
+type Subscribable = {
+  subscribe: (cb: Callback) => Unsubscribe
+  notify: () => void
+}
+
+type DbBase = {
   db: PGlite
   status: DbStatus
   dataset: SeedData | null
 }
+
+type Db = DbBase & Subscribable
+
+const run = <Output>(fn: () => Output) => fn()
+
+const initSubscribable = (): Subscribable => {
+  const subscribers: Array<Callback> = []
+
+  return {
+    subscribe: (cb: Callback) => {
+      subscribers.push(cb)
+      return () => {
+        let idx: number
+        ;(idx = subscribers.indexOf(cb)) && subscribers.splice(idx)
+      }
+    },
+    notify: () => subscribers.forEach(run),
+  }
+}
+
+const initDb = (): Db => {
+  const subscribable = initSubscribable()
+
+  return {
+    db: new PGlite(),
+    status: DbStatus.Initializing,
+    dataset: null,
+    ...subscribable,
+  }
+}
+
+const noop = () => undefined
 
 const withStatusTransition =
   <Options extends [object] | []>(
@@ -60,34 +115,34 @@ const withStatusTransition =
       finalStatus,
       errorMessage = 'Error',
       closeOnError = true,
+      transitionOptions = noop,
     }: {
       pendingStatus: DbStatus
       finalStatus: DbStatus
       errorMessage?: string
       closeOnError?: boolean
+      transitionOptions?: (db: Db) => object
     }
   ) =>
   async (...params: [Db, ...Options]) => {
     try {
-      transitionStatus(db, db.status, pendingStatus)
+      transitionStatus(db, db.status, pendingStatus, transitionOptions(db))
       await fn(...params)
-      transitionStatus(db, db.status, finalStatus)
+      transitionStatus(db, db.status, finalStatus, transitionOptions(db))
     } catch (err) {
       console.error(`${errorMessage}: ${err}`)
       if (closeOnError) closeDbOnError(db)
     }
   }
 
-const initDb = () => ({ db: new PGlite(), status: DbStatus.Initializing, dataset: null }) as Db
-
 const setupDb = withStatusTransition(
   async (db: Db, { data }: { data: SeedData }) => {
     await db.db.query(seedMap[data])
-    db.dataset = data
   },
   {
     pendingStatus: DbStatus.SettingUp,
     finalStatus: DbStatus.Ready,
+    transitionOptions: (db) => ({ dataset: db.dataset }),
     errorMessage: 'Error setting up DB',
   }
 )
@@ -96,7 +151,6 @@ const closeDb = withStatusTransition(
   async (db: Db) => {
     if (db.status !== DbStatus.Closed) {
       await db.db.close()
-      db.dataset = null
     }
   },
   {
