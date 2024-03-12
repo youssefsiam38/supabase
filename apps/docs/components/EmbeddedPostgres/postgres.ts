@@ -11,54 +11,54 @@ enum DbStatus {
   Error = 'Error',
 }
 
-const transitionStatus = (db: Db, old: DbStatus, updated: DbStatus, options?: object) => {
+const allowedTransitions: Record<
+  DbStatus,
+  Partial<
+    Record<
+      DbStatus,
+      {
+        condition?: (db: Db, options?: object) => boolean
+        onEnter?: (db: Db, options?: any) => void // TODO: remove any
+      }
+    >
+  >
+> = {
+  [DbStatus.Initializing]: {
+    [DbStatus.SettingUp]: {
+      condition: (_: Db, options?: object) => !!(options && 'dataset' in options),
+      onEnter: (db: Db, options: any) => (db.dataset = options.dataset as SeedData),
+    },
+    [DbStatus.Error]: {},
+  },
+  [DbStatus.Reinitializing]: {
+    [DbStatus.SettingUp]: {
+      condition: (_: Db, options?: object) => !!(options && 'dataset' in options),
+      onEnter: (db: Db, options: any) => (db.dataset = options.dataset as SeedData),
+    },
+    [DbStatus.Error]: {},
+  },
+  [DbStatus.SettingUp]: { [DbStatus.Ready]: {}, [DbStatus.Error]: {} },
+  [DbStatus.Ready]: { [DbStatus.Closing]: {}, [DbStatus.Error]: {} },
+  [DbStatus.Closing]: { [DbStatus.Closed]: {}, [DbStatus.Error]: {} },
+  [DbStatus.Closed]: { [DbStatus.Error]: {} },
+  [DbStatus.Error]: { [DbStatus.Error]: {} },
+}
+
+const transition = (db: Db, old: DbStatus, updated: DbStatus, options?: object) => {
   if (old === updated) {
-    console.warn(`Trying to transition to the current status: ${old}`)
+    console.warn(`Trying to transition to the already active status: ${old}`)
     return old
   }
 
-  switch (old) {
-    case DbStatus.Initializing:
-      if (updated === DbStatus.SettingUp) {
-        if (!('dataset' in options)) {
-          throw Error(`Cannot set up database without specifying seed dataset`)
-        }
-        db.status = updated
-        db.dataset = options.dataset as SeedData
-      }
-    case DbStatus.Reinitializing:
-      if (updated === DbStatus.SettingUp) {
-        if (!('dataset' in options)) {
-          throw Error(`Cannot set up database without specifying seed dataset`)
-        }
-        db.status = updated
-        db.dataset = options.dataset as SeedData
-      }
-    case DbStatus.SettingUp:
-      if (updated === DbStatus.Ready) db.status = updated
-    case DbStatus.Ready:
-      if (updated === DbStatus.Closing) {
-        db.status = updated
-        db.dataset = null
-      }
-    case DbStatus.Closing:
-      if (updated === DbStatus.Closed) db.status = updated
-    case DbStatus.Closed:
-      if (updated === DbStatus.Reinitializing) db.status = updated
-    default:
-      if (updated === DbStatus.Error) db.status = updated
-      throw Error(`Cannot transition between status ${old} and status ${updated}`)
+  const transition = allowedTransitions[old][updated]
+  // Explicit check for false because lack of condition (undefined) = automatic pass
+  if (!transition || transition.condition?.(db, options) === false) {
+    throw Error(`Cannot transition between state ${old} and ${updated}`)
   }
-}
 
-type Sql = string
-
-enum SeedData {
-  Countries = 'countries',
-}
-
-const seedMap: Record<SeedData, Sql> = {
-  [SeedData.Countries]: countriesSeed,
+  db.status = updated
+  transition.onEnter?.(db, options)
+  db.notify()
 }
 
 type Callback = () => void
@@ -126,14 +126,24 @@ const withStatusTransition =
   ) =>
   async (...params: [Db, ...Options]) => {
     try {
-      transitionStatus(db, db.status, pendingStatus, transitionOptions(db))
+      transition(db, db.status, pendingStatus, transitionOptions(db))
       await fn(...params)
-      transitionStatus(db, db.status, finalStatus, transitionOptions(db))
+      transition(db, db.status, finalStatus, transitionOptions(db))
     } catch (err) {
       console.error(`${errorMessage}: ${err}`)
       if (closeOnError) closeDbOnError(db)
     }
   }
+
+type Sql = string
+
+enum SeedData {
+  Countries = 'countries',
+}
+
+const seedMap: Record<SeedData, Sql> = {
+  [SeedData.Countries]: countriesSeed,
+}
 
 const setupDb = withStatusTransition(
   async (db: Db, { data }: { data: SeedData }) => {
