@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { type PropsWithChildren, useCallback, useState, useSyncExternalStore } from 'react'
+import { type PropsWithChildren, useCallback, useReducer, useSyncExternalStore } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -13,10 +13,83 @@ const formSchema = z.object({
   sql: z.string().min(1),
 })
 
-const QueryResults = ({ results }: { results: Array<object> }) => {
-  if (!results.length) return null
+enum QueryStateType {
+  Empty = 'Empty',
+  Loading = 'Loading',
+  SuccessData = 'SuccessData',
+  SuccessNoData = 'SuccessNoData',
+  Error = 'Error',
+}
 
-  const columns = Object.keys(results[0])
+type QuerySuccessState =
+  | { __state: QueryStateType.SuccessData; results: Array<any> }
+  | { __state: QueryStateType.SuccessNoData }
+
+type QueryState =
+  | { __state: QueryStateType.Empty }
+  | { __state: QueryStateType.Loading }
+  | QuerySuccessState
+  | { __state: QueryStateType.Error }
+
+const initialQueryState = { __state: QueryStateType.Empty } as QueryState
+
+enum QUERY_EVENT_TYPE {
+  QUERY_SENT = 'QUERY_SENT',
+  SUCCESS_RECEIVED = 'SUCCESS_RECEIVED',
+  ERRORED = 'ERRORED',
+  RESET = 'RESET',
+}
+
+type QueryEvent =
+  | { __type: QUERY_EVENT_TYPE.QUERY_SENT }
+  | { __type: QUERY_EVENT_TYPE.SUCCESS_RECEIVED; response: Array<any> | undefined }
+  | { __type: QUERY_EVENT_TYPE.ERRORED }
+  | { __type: QUERY_EVENT_TYPE.RESET }
+
+const queryStateReducer = (state: QueryState, event: QueryEvent): QueryState => {
+  switch (event.__type) {
+    case QUERY_EVENT_TYPE.QUERY_SENT:
+      if (state.__state !== QueryStateType.Loading) {
+        return {
+          __state: QueryStateType.Loading,
+        }
+      }
+      break
+    case QUERY_EVENT_TYPE.SUCCESS_RECEIVED:
+      if (state.__state === QueryStateType.Loading) {
+        if (event.response) {
+          return {
+            __state: QueryStateType.SuccessData,
+            results: event.response,
+          }
+        } else {
+          return {
+            __state: QueryStateType.SuccessNoData,
+          }
+        }
+      }
+      break
+    case QUERY_EVENT_TYPE.ERRORED:
+      return {
+        __state: QueryStateType.Error,
+      }
+    case QUERY_EVENT_TYPE.RESET:
+      return {
+        __state: QueryStateType.Empty,
+      }
+  }
+
+  return state
+}
+
+const QueryResults = ({ state }: { state: QuerySuccessState }) => {
+  if (state.__state === QueryStateType.SuccessNoData) {
+    return 'Success'
+  }
+
+  if (!state.results.length) return 'No results found'
+
+  const columns = Object.keys(state.results[0])
 
   return (
     <table>
@@ -28,7 +101,7 @@ const QueryResults = ({ results }: { results: Array<object> }) => {
         </tr>
       </thead>
       <tbody>
-        {results.map((result, idx) => (
+        {state.results.map((result, idx) => (
           <tr key={idx}>
             {Object.values(result).map((value, idx) => (
               <td key={idx}>{`${value}`}</td>
@@ -41,7 +114,12 @@ const QueryResults = ({ results }: { results: Array<object> }) => {
 }
 
 const DbQueryForm = () => {
-  const [results, setResults] = useState<Array<object>>([])
+  const [state, dispatch] = useReducer(queryStateReducer, initialQueryState)
+
+  const isSuccess =
+    state.__state === QueryStateType.SuccessData || state.__state === QueryStateType.SuccessNoData
+  const isLoading = state.__state === QueryStateType.Loading
+  const isError = state.__state === QueryStateType.Error
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,16 +128,26 @@ const DbQueryForm = () => {
     },
   })
 
-  const onSubmitQuery = useCallback(async ({ sql }: z.infer<typeof formSchema>) => {
-    try {
-      const response = await db.db.query(sql)
-      if (Array.isArray(response)) setResults(response)
-    } catch (err) {
-      console.error(err)
-    }
-  }, [])
+  const onSubmitQuery = useCallback(
+    async ({ sql }: z.infer<typeof formSchema>) => {
+      try {
+        dispatch({ __type: QUERY_EVENT_TYPE.QUERY_SENT })
+        form.reset()
+        const response = await db.db.query(sql)
+        dispatch({
+          __type: QUERY_EVENT_TYPE.SUCCESS_RECEIVED,
+          response: response as Array<any> | undefined,
+        })
+      } catch (err) {
+        dispatch({
+          __type: QUERY_EVENT_TYPE.ERRORED,
+        })
+      }
+    },
+    [form]
+  )
 
-  const clearResults = useCallback(() => setResults([]), [])
+  const clearResults = () => dispatch({ __type: QUERY_EVENT_TYPE.RESET })
 
   return (
     <>
@@ -68,13 +156,15 @@ const DbQueryForm = () => {
           <FormField_Shadcn_
             control={form.control}
             name="sql"
+            disabled={isLoading}
             render={({ field }) => <Input_Shadcn_ {...field} />}
           />
-          <Button_Shadcn_>Execute SQL</Button_Shadcn_>
+          <Button_Shadcn_ disabled={isLoading}>Execute SQL</Button_Shadcn_>
         </form>
       </Form_Shadcn_>
       <Button_Shadcn_ onClick={clearResults}>Clear results</Button_Shadcn_>
-      <QueryResults results={results} />
+      {isSuccess && <QueryResults state={state} />}
+      {isError && 'Sorry, error!'}
     </>
   )
 }
@@ -95,8 +185,6 @@ const DbStatusSwitch = () => {
     default:
       return 'error'
   }
-
-  return <></>
 }
 
 const EmbeddedPostgres = () => {
