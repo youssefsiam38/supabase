@@ -36,8 +36,6 @@ const withMDX = nextMdx({
 const nextConfig = {
   // Append the default value with md extensions
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
-  // reactStrictMode: true,
-  // swcMinify: true,
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/docs',
   images: {
     dangerouslyAllowSVG: true,
@@ -70,6 +68,22 @@ const nextConfig = {
     'shared-data',
     'icons',
   ],
+  /**
+   * `pglite` conditionally loads node modules `fs`, `module`, and `path`, which
+   * webpack tries unsuccessfully to bundle for the browser.
+   *
+   * These must be ignored to build successfully.
+   */
+  webpack: (config, { webpack }) => {
+    ;(config.plugins ??= []).push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^(?:fs|path|module)$/,
+        contextRegExp: /pglite\/dist$/,
+      })
+    )
+
+    return config
+  },
   async headers() {
     return [
       {
