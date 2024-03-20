@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { type PropsWithChildren, useSyncExternalStore, useState, useCallback } from 'react'
+import { type PropsWithChildren, useCallback, useState, useSyncExternalStore } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Button, Button_Shadcn_, FormField_Shadcn_, Form_Shadcn_, Input_Shadcn_ } from 'ui'
+import { Button_Shadcn_, FormField_Shadcn_, Form_Shadcn_, Input_Shadcn_ } from 'ui'
 
 import { DbStatus, db } from './postgres'
 
@@ -13,8 +13,35 @@ const formSchema = z.object({
   sql: z.string().min(1),
 })
 
+const QueryResults = ({ results }: { results: Array<object> }) => {
+  if (!results.length) return null
+
+  const columns = Object.keys(results[0])
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          {columns.map((column) => (
+            <th key={column}>{column}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {results.map((result, idx) => (
+          <tr key={idx}>
+            {Object.values(result).map((value, idx) => (
+              <td key={idx}>{`${value}`}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 const DbQueryForm = () => {
-  const [results, setResults] = useState<Array<any>>()
+  const [results, setResults] = useState<Array<object>>([])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,13 +74,7 @@ const DbQueryForm = () => {
         </form>
       </Form_Shadcn_>
       <Button_Shadcn_ onClick={clearResults}>Clear results</Button_Shadcn_>
-      <ul>
-        {results?.map((result, i) => (
-          <li key={i}>
-            <pre>{JSON.stringify(result, null, 2)}</pre>
-          </li>
-        ))}
-      </ul>
+      <QueryResults results={results} />
     </>
   )
 }
