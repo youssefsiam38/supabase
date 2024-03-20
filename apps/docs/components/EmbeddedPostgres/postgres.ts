@@ -29,6 +29,7 @@ const allowedTransitions: Record<
       onEnter: (db: Db, options: any) => (db.dataset = options.dataset as SeedData),
     },
     [DbStatus.Error]: {},
+    [DbStatus.Closing]: {},
   },
   [DbStatus.Reinitializing]: {
     [DbStatus.SettingUp]: {
@@ -36,12 +37,13 @@ const allowedTransitions: Record<
       onEnter: (db: Db, options: any) => (db.dataset = options.dataset as SeedData),
     },
     [DbStatus.Error]: {},
+    [DbStatus.Closing]: {},
   },
-  [DbStatus.SettingUp]: { [DbStatus.Ready]: {}, [DbStatus.Error]: {} },
+  [DbStatus.SettingUp]: { [DbStatus.Ready]: {}, [DbStatus.Error]: {}, [DbStatus.Closing]: {} },
   [DbStatus.Ready]: { [DbStatus.Closing]: {}, [DbStatus.Error]: {} },
   [DbStatus.Closing]: { [DbStatus.Closed]: {}, [DbStatus.Error]: {} },
   [DbStatus.Closed]: { [DbStatus.Error]: {} },
-  [DbStatus.Error]: { [DbStatus.Error]: {} },
+  [DbStatus.Error]: { [DbStatus.Error]: {}, [DbStatus.Closing]: {} },
 }
 
 const transition = (db: Db, old: DbStatus, updated: DbStatus, options?: object) => {
