@@ -34,10 +34,10 @@ const buttonVariants = cva(
       type: {
         primary: `
             bg-brand-button hover:bg-brand-button/80
-            text-white
+            text-white [&_span]:drop-shadow-[0.5px_0.6px_1.2px_rgba(0,0,0,0.2)]
             border-brand
             focus-visible:outline-brand-600
-            shadow-sm
+            shadow-sm shadow-inner
             data-[state=open]:bg-brand-button/80
             data-[state=open]:outline-brand-600
             `,
