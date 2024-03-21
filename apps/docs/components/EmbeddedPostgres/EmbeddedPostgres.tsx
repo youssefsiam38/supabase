@@ -1,17 +1,19 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { type PropsWithChildren, useCallback, useReducer, useSyncExternalStore } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
+import Editor, { useMonaco } from '@monaco-editor/react'
+import { useTheme } from 'next-themes'
+import {
+  type PropsWithChildren,
+  useCallback,
+  useReducer,
+  useSyncExternalStore,
+  useState,
+} from 'react'
 
-import { Button_Shadcn_, FormField_Shadcn_, Form_Shadcn_, Input_Shadcn_ } from 'ui'
+import { Button_Shadcn_ } from 'ui'
 
+import { useOnceWithDependencies } from '~/hooks/useOnceWithDependencies'
 import { DbStatus, db } from './postgres'
 
 const LoadingMessage = ({ children }: PropsWithChildren) => <>{children}</>
-
-const formSchema = z.object({
-  sql: z.string().min(1),
-})
 
 enum QueryStateType {
   Empty = 'Empty',
@@ -113,56 +115,91 @@ const QueryResults = ({ state }: { state: QuerySuccessState }) => {
   )
 }
 
+export const getTheme = (theme: string) => {
+  const isDarkMode = theme.includes('dark')
+  // [TODO] Probably need better theming for light mode
+  return {
+    base: isDarkMode ? 'vs-dark' : 'vs', // can also be vs-dark or hc-black
+    inherit: true, // can also be false to completely replace the builtin rules
+    rules: [
+      { background: isDarkMode ? '1f1f1f' : 'f0f0f0' },
+      {
+        token: '',
+        background: isDarkMode ? '1f1f1f' : 'f0f0f0',
+        foreground: isDarkMode ? 'd4d4d4' : '444444',
+      },
+      { token: 'string.sql', foreground: '24b47e' },
+      { token: 'comment', foreground: '666666' },
+      { token: 'predefined.sql', foreground: isDarkMode ? 'D4D4D4' : '444444' },
+    ],
+    colors: { 'editor.background': isDarkMode ? '#1f1f1f' : '#f0f0f0' },
+  }
+}
+
+const useConfigureEditor = () => {
+  const { resolvedTheme } = useTheme()
+  const monaco = useMonaco()
+
+  const configureEditor = useCallback(() => {
+    if (monaco && resolvedTheme) {
+      const mode: any = getTheme(resolvedTheme)
+      monaco.editor.defineTheme('supabase', mode)
+    }
+  }, [resolvedTheme, monaco])
+
+  useOnceWithDependencies(configureEditor, [monaco, resolvedTheme])
+}
+
 const DbQueryForm = () => {
   const [state, dispatch] = useReducer(queryStateReducer, initialQueryState)
+
+  useConfigureEditor()
+  const [sql, setSql] = useState('')
 
   const isSuccess =
     state.__state === QueryStateType.SuccessData || state.__state === QueryStateType.SuccessNoData
   const isLoading = state.__state === QueryStateType.Loading
   const isError = state.__state === QueryStateType.Error
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      sql: '',
-    },
-  })
+  const onSubmitQuery = useCallback(async () => {
+    try {
+      dispatch({ __type: QUERY_EVENT_TYPE.QUERY_SENT })
+      const response = await db.db.query(sql)
+      dispatch({
+        __type: QUERY_EVENT_TYPE.SUCCESS_RECEIVED,
+        response: response as Array<any> | undefined,
+      })
+    } catch (err) {
+      dispatch({
+        __type: QUERY_EVENT_TYPE.ERRORED,
+      })
+    }
+  }, [sql])
 
-  const onSubmitQuery = useCallback(
-    async ({ sql }: z.infer<typeof formSchema>) => {
-      try {
-        dispatch({ __type: QUERY_EVENT_TYPE.QUERY_SENT })
-        form.reset()
-        const response = await db.db.query(sql)
-        dispatch({
-          __type: QUERY_EVENT_TYPE.SUCCESS_RECEIVED,
-          response: response as Array<any> | undefined,
-        })
-      } catch (err) {
-        dispatch({
-          __type: QUERY_EVENT_TYPE.ERRORED,
-        })
-      }
-    },
-    [form]
-  )
-
+  const clearEditor = () => setSql('')
   const clearResults = () => dispatch({ __type: QUERY_EVENT_TYPE.RESET })
 
   return (
     <>
-      <Form_Shadcn_ {...form}>
-        <form onSubmit={form.handleSubmit(onSubmitQuery)} className="flex gap-2">
-          <FormField_Shadcn_
-            control={form.control}
-            name="sql"
-            disabled={isLoading}
-            render={({ field }) => <Input_Shadcn_ {...field} />}
-          />
-          <Button_Shadcn_ disabled={isLoading}>Execute SQL</Button_Shadcn_>
-        </form>
-      </Form_Shadcn_>
-      <Button_Shadcn_ onClick={clearResults}>Clear results</Button_Shadcn_>
+      <Editor
+        theme="supabase"
+        height="50vh"
+        defaultLanguage="sql"
+        value={sql}
+        onChange={(value) => setSql(value)}
+      />
+      <Button_Shadcn_ disabled={isLoading} onClick={onSubmitQuery}>
+        Execute SQL
+      </Button_Shadcn_>
+      <Button_Shadcn_ disabled={!sql.length} onClick={clearEditor}>
+        Clear editor
+      </Button_Shadcn_>
+      <Button_Shadcn_
+        disabled={state.__state !== QueryStateType.SuccessData}
+        onClick={clearResults}
+      >
+        Clear results
+      </Button_Shadcn_>
       {isSuccess && <QueryResults state={state} />}
       {isError && 'Sorry, error!'}
     </>

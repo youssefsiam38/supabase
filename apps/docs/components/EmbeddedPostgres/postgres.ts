@@ -1,4 +1,5 @@
 import { PGlite } from '@electric-sql/pglite'
+
 import { countriesSeed } from './data/countries'
 
 enum DbStatus {
