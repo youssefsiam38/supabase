@@ -6,13 +6,13 @@ import DefaultLayout from '~/components/Layouts/Default'
 import { Dot } from '~/components/LaunchWeek/11/Dot2'
 
 const defaultConfig = {
-  dotGrid: 15,
-  percentageLarge: 0.99,
-  percentageAnimated: 0.75,
-  randomizeLargeDots: 4,
+  dotGrid: 20,
+  percentageLarge: 0.995,
+  percentageAnimated: 0.35,
+  randomizeLargeDots: 2,
   randomizeSmallDots: 0.7,
   minSpeed: 1,
-  maxSpeed: 4,
+  maxSpeed: 2,
   minOscillation: 1,
   maxOscillation: 12,
   minDelay: -3000,
@@ -229,6 +229,16 @@ const LW11 = () => {
   }, [])
 
   init()
+
+  useEffect(() => {
+    document.body.classList.add('bg-[#060809]')
+
+    return () => {
+      if (document.body.classList.contains('bg-[#060809]')) {
+        document.body.classList.remove('bg-[#060809]')
+      }
+    }
+  }, [])
 
   return (
     <DefaultLayout>
