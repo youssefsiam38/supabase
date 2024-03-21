@@ -123,14 +123,14 @@ const withStatusTransition =
       finalStatus: DbStatus
       errorMessage?: string
       closeOnError?: boolean
-      transitionOptions?: (db: Db) => object
+      transitionOptions?: (db: Db, ...options: Options) => object
     }
   ) =>
   async (...params: [Db, ...Options]) => {
     try {
-      transition(db, db.status, pendingStatus, transitionOptions(db))
+      transition(db, db.status, pendingStatus, transitionOptions(...params))
       await fn(...params)
-      transition(db, db.status, finalStatus, transitionOptions(db))
+      transition(db, db.status, finalStatus, transitionOptions(...params))
     } catch (err) {
       console.error(`${errorMessage}: ${err}`)
       if (closeOnError) closeDbOnError(db)
@@ -154,7 +154,7 @@ const setupDb = withStatusTransition(
   {
     pendingStatus: DbStatus.SettingUp,
     finalStatus: DbStatus.Ready,
-    transitionOptions: (db) => ({ dataset: db.dataset }),
+    transitionOptions: (db, options) => ({ dataset: options.data }),
     errorMessage: 'Error setting up DB',
   }
 )

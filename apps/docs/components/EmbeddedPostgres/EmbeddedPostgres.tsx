@@ -176,7 +176,11 @@ const DbStatusSwitch = () => {
     case DbStatus.Reinitializing:
       return <LoadingMessage>Resetting database...</LoadingMessage>
     case DbStatus.SettingUp:
-      return <LoadingMessage>Seeding data with {db.dataset} dataset...</LoadingMessage>
+      return (
+        <LoadingMessage>
+          Seeding data with <code>{db.dataset}</code> dataset...
+        </LoadingMessage>
+      )
     case DbStatus.Ready:
       return <DbQueryForm />
     case DbStatus.Closing:
