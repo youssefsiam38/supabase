@@ -9,7 +9,15 @@ import {
 import { Button_Shadcn_ } from 'ui'
 
 import { Editor } from '~/components/CodeEditor'
-import { DbStatus, db } from './postgres'
+import { DbStatus, SeedData, initDb, setupDb } from './postgres'
+
+const db = initDb()
+/**
+ * Not awaited because we don't want to block render on seeding.
+ *
+ * Instead component should check for DbStatus.
+ */
+setupDb(db, { data: SeedData.Countries })
 
 const LoadingMessage = ({ children }: PropsWithChildren) => <>{children}</>
 

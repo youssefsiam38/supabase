@@ -30,7 +30,6 @@ const allowedTransitions: Record<
       onEnter: (db: Db, options: any) => (db.dataset = options.dataset as SeedData),
     },
     [DbStatus.Error]: {},
-    [DbStatus.Closing]: {},
   },
   [DbStatus.Reinitializing]: {
     [DbStatus.SettingUp]: {
@@ -38,13 +37,12 @@ const allowedTransitions: Record<
       onEnter: (db: Db, options: any) => (db.dataset = options.dataset as SeedData),
     },
     [DbStatus.Error]: {},
-    [DbStatus.Closing]: {},
   },
-  [DbStatus.SettingUp]: { [DbStatus.Ready]: {}, [DbStatus.Error]: {}, [DbStatus.Closing]: {} },
-  [DbStatus.Ready]: { [DbStatus.Closing]: {}, [DbStatus.Error]: {} },
+  [DbStatus.SettingUp]: { [DbStatus.Ready]: {}, [DbStatus.Error]: {} },
+  [DbStatus.Ready]: { [DbStatus.Error]: {} },
   [DbStatus.Closing]: { [DbStatus.Closed]: {}, [DbStatus.Error]: {} },
   [DbStatus.Closed]: { [DbStatus.Error]: {} },
-  [DbStatus.Error]: { [DbStatus.Error]: {}, [DbStatus.Closing]: {} },
+  [DbStatus.Error]: { [DbStatus.Closing]: {} },
 }
 
 const transition = (db: Db, old: DbStatus, updated: DbStatus, options?: object) => {
@@ -128,6 +126,7 @@ const withStatusTransition =
     }
   ) =>
   async (...params: [Db, ...Options]) => {
+    const [db] = params
     try {
       transition(db, db.status, pendingStatus, transitionOptions(...params))
       await fn(...params)
@@ -183,21 +182,12 @@ const closeDbOnError = async (db: Db) => {
 }
 
 const resetDb = async (db: Db, data?: SeedData) => {
-  await closeDb(db)
-  withStatusTransition((db: Db) => (db.db = new PGlite()), {
-    pendingStatus: DbStatus.Closed,
+  withStatusTransition(async (db: Db) => db.db.query('drop owned by postgres'), {
+    pendingStatus: db.status,
     finalStatus: DbStatus.Reinitializing,
     errorMessage: 'Error initializing new DB',
   })
   setupDb(db, data && { data })
 }
 
-const db = initDb()
-/**
- * Not awaited because we don't want to block render on seeding.
- *
- * Instead component should check for DbStatus.
- */
-setupDb(db, { data: SeedData.Countries })
-
-export { DbStatus, SeedData, db, resetDb }
+export { DbStatus, SeedData, initDb, resetDb, setupDb }
