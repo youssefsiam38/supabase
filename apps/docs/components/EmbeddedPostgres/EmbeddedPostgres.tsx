@@ -1,5 +1,3 @@
-import Editor, { useMonaco } from '@monaco-editor/react'
-import { useTheme } from 'next-themes'
 import {
   type PropsWithChildren,
   useCallback,
@@ -10,7 +8,7 @@ import {
 
 import { Button_Shadcn_ } from 'ui'
 
-import { useOnceWithDependencies } from '~/hooks/useOnceWithDependencies'
+import { Editor } from '~/components/CodeEditor'
 import { DbStatus, db } from './postgres'
 
 const LoadingMessage = ({ children }: PropsWithChildren) => <>{children}</>
@@ -115,45 +113,9 @@ const QueryResults = ({ state }: { state: QuerySuccessState }) => {
   )
 }
 
-export const getTheme = (theme: string) => {
-  const isDarkMode = theme.includes('dark')
-  // [TODO] Probably need better theming for light mode
-  return {
-    base: isDarkMode ? 'vs-dark' : 'vs', // can also be vs-dark or hc-black
-    inherit: true, // can also be false to completely replace the builtin rules
-    rules: [
-      { background: isDarkMode ? '1f1f1f' : 'f0f0f0' },
-      {
-        token: '',
-        background: isDarkMode ? '1f1f1f' : 'f0f0f0',
-        foreground: isDarkMode ? 'd4d4d4' : '444444',
-      },
-      { token: 'string.sql', foreground: '24b47e' },
-      { token: 'comment', foreground: '666666' },
-      { token: 'predefined.sql', foreground: isDarkMode ? 'D4D4D4' : '444444' },
-    ],
-    colors: { 'editor.background': isDarkMode ? '#1f1f1f' : '#f0f0f0' },
-  }
-}
-
-const useConfigureEditor = () => {
-  const { resolvedTheme } = useTheme()
-  const monaco = useMonaco()
-
-  const configureEditor = useCallback(() => {
-    if (monaco && resolvedTheme) {
-      const mode: any = getTheme(resolvedTheme)
-      monaco.editor.defineTheme('supabase', mode)
-    }
-  }, [resolvedTheme, monaco])
-
-  useOnceWithDependencies(configureEditor, [monaco, resolvedTheme])
-}
-
 const DbQueryForm = () => {
   const [state, dispatch] = useReducer(queryStateReducer, initialQueryState)
 
-  useConfigureEditor()
   const [sql, setSql] = useState('')
 
   const isSuccess =
@@ -181,13 +143,7 @@ const DbQueryForm = () => {
 
   return (
     <>
-      <Editor
-        theme="supabase"
-        height="50vh"
-        defaultLanguage="sql"
-        value={sql}
-        onChange={(value) => setSql(value)}
-      />
+      <Editor height="50vh" defaultLanguage="sql" value={sql} onChange={(value) => setSql(value)} />
       <Button_Shadcn_ disabled={isLoading} onClick={onSubmitQuery}>
         Execute SQL
       </Button_Shadcn_>
