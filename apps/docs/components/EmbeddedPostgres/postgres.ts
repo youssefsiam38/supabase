@@ -154,7 +154,7 @@ const setupDb = withStatusTransition(
   {
     pendingStatus: DbStatus.SettingUp,
     finalStatus: DbStatus.Ready,
-    transitionOptions: (db, options) => ({ dataset: options.data }),
+    transitionOptions: (_, options) => ({ dataset: options.data }),
     errorMessage: 'Error setting up DB',
   }
 )
@@ -190,4 +190,4 @@ const resetDb = async (db: Db, data?: SeedData) => {
   setupDb(db, data && { data })
 }
 
-export { DbStatus, SeedData, initDb, resetDb, setupDb }
+export { DbStatus, SeedData, closeDb, initDb, resetDb, setupDb }
