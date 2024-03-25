@@ -172,9 +172,10 @@ const DbQueryForm = () => {
 
 const DbStatusSwitch = () => {
   switch (db.status) {
-    case DbStatus.Initializing:
+    case DbStatus.Initialized:
       return <LoadingMessage>Setting up database...</LoadingMessage>
     case DbStatus.Reinitializing:
+    case DbStatus.Reinitialized:
       return <LoadingMessage>Resetting database...</LoadingMessage>
     case DbStatus.SettingUp:
       return (

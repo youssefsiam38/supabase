@@ -1,4 +1,4 @@
-import { SeedData, closeDb, initDb, setupDb } from './postgres'
+import { SeedData, closeDb, initDb, resetDb, setupDb } from './postgres'
 
 let db
 
@@ -37,5 +37,23 @@ describe('seeded data', () => {
   it('can query seeded data', async () => {
     const result = await db.db.query('select name from countries order by name limit 1')
     expect(result).toStrictEqual([{ name: 'Afghanistan' }])
+  })
+})
+
+describe('can reset seeded data', () => {
+  let db
+
+  beforeAll(async () => {
+    db = initDb()
+    await setupDb(db, { data: SeedData.Countries })
+  })
+
+  it('countries data not available after reset', async () => {
+    let result = await db.db.query('select name from countries order by name limit 1')
+    expect(result).toStrictEqual([{ name: 'Afghanistan' }])
+
+    await resetDb(db, SeedData.Empty)
+    result = await db.db.query('select name from countries order by name limit 1')
+    expect(result).toBe(undefined)
   })
 })

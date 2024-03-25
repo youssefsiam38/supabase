@@ -3,8 +3,9 @@ import { PGlite } from '@electric-sql/pglite'
 import { countriesSeed } from './data/countries'
 
 enum DbStatus {
-  Initializing = 'Initializing',
+  Initialized = 'Initialized',
   Reinitializing = 'Reinitializing',
+  Reinitialized = 'Reinitialized',
   SettingUp = 'SettingUp',
   Ready = 'Ready',
   Closing = 'Closing',
@@ -24,7 +25,7 @@ const allowedTransitions: Record<
     >
   >
 > = {
-  [DbStatus.Initializing]: {
+  [DbStatus.Initialized]: {
     [DbStatus.SettingUp]: {
       condition: (_: Db, options?: object) => !!(options && 'dataset' in options),
       onEnter: (db: Db, options: any) => (db.dataset = options.dataset as SeedData),
@@ -32,6 +33,9 @@ const allowedTransitions: Record<
     [DbStatus.Error]: {},
   },
   [DbStatus.Reinitializing]: {
+    [DbStatus.Reinitialized]: {},
+  },
+  [DbStatus.Reinitialized]: {
     [DbStatus.SettingUp]: {
       condition: (_: Db, options?: object) => !!(options && 'dataset' in options),
       onEnter: (db: Db, options: any) => (db.dataset = options.dataset as SeedData),
@@ -39,7 +43,7 @@ const allowedTransitions: Record<
     [DbStatus.Error]: {},
   },
   [DbStatus.SettingUp]: { [DbStatus.Ready]: {}, [DbStatus.Error]: {} },
-  [DbStatus.Ready]: { [DbStatus.Error]: {} },
+  [DbStatus.Ready]: { [DbStatus.Reinitializing]: {}, [DbStatus.Error]: {} },
   [DbStatus.Closing]: { [DbStatus.Closed]: {}, [DbStatus.Error]: {} },
   [DbStatus.Closed]: { [DbStatus.Error]: {} },
   [DbStatus.Error]: { [DbStatus.Closing]: {} },
@@ -100,7 +104,7 @@ const initDb = (): Db => {
 
   return {
     db: new PGlite(),
-    status: DbStatus.Initializing,
+    status: DbStatus.Initialized,
     dataset: null,
     ...subscribable,
   }
@@ -110,7 +114,7 @@ const noop = () => undefined
 
 const withStatusTransition =
   <Options extends [object] | []>(
-    fn: (db: Db, ...options: Options) => void,
+    fn: (db: Db, ...options: Options) => void | Promise<unknown>,
     {
       pendingStatus,
       finalStatus,
@@ -133,6 +137,7 @@ const withStatusTransition =
       transition(db, db.status, finalStatus, transitionOptions(...params))
     } catch (err) {
       console.error(`${errorMessage}: ${err}`)
+      transition(db, db.status, DbStatus.Error)
       if (closeOnError) closeDbOnError(db)
     }
   }
@@ -141,10 +146,13 @@ type Sql = string
 
 enum SeedData {
   Countries = 'countries',
+  Empty = 'empty',
 }
 
 const seedMap: Record<SeedData, Sql> = {
   [SeedData.Countries]: countriesSeed,
+  // Can't be an empty string because must pass valid SQL
+  [SeedData.Empty]: 'select 1;',
 }
 
 const setupDb = withStatusTransition(
@@ -182,12 +190,12 @@ const closeDbOnError = async (db: Db) => {
 }
 
 const resetDb = async (db: Db, data?: SeedData) => {
-  withStatusTransition(async (db: Db) => db.db.query('drop owned by postgres'), {
-    pendingStatus: db.status,
-    finalStatus: DbStatus.Reinitializing,
+  await withStatusTransition((db: Db) => db.db.query('drop owned by postgres'), {
+    pendingStatus: DbStatus.Reinitializing,
+    finalStatus: DbStatus.Reinitialized,
     errorMessage: 'Error initializing new DB',
-  })
-  setupDb(db, data && { data })
+  })(db)
+  setupDb(db, { data: data ?? SeedData.Countries })
 }
 
 export { DbStatus, SeedData, closeDb, initDb, resetDb, setupDb }
