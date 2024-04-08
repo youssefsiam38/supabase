@@ -11,9 +11,10 @@ import { ThemeImage } from 'ui-patterns/ThemeImage'
 
 // Common components
 import { CH } from '@code-hike/mdx/components'
+import ButtonCard from '~/components/ButtonCard'
+import { Heading } from '~/components/CustomHTMLElements'
 import StepHikeCompact from '~/components/StepHikeCompact'
-import ButtonCard from './ButtonCard'
-import { Heading } from './CustomHTMLElements'
+import { AddEditLink } from '~/features/EditLink'
 
 // Reference guide specific
 // [Charis] I think we can factor these out so they aren't in the bundle for absolutely everything
@@ -78,6 +79,7 @@ import { RealtimeLimitsEstimator } from './RealtimeLimitsEstimator'
 const components = {
   ...markdownComponents,
   Accordion,
+  AddEditLink,
   Admonition,
   Alert: (props: any) => (
     <Alert {...props} className="not-prose">
