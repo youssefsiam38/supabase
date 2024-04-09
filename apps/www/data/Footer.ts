@@ -54,6 +54,10 @@ const footerData = [
         url: '/partners',
       },
       {
+        text: 'Templates',
+        url: '/templates',
+      },
+      {
         text: 'Integrations',
         url: '/partners/integrations',
       },

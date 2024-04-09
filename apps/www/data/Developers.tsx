@@ -8,6 +8,7 @@ import {
   IconLifeBuoy2,
   IconPartners,
 } from 'ui'
+import { Layout } from 'lucide-react'
 
 export const data = {
   navigation: [
@@ -18,6 +19,11 @@ export const data = {
           text: 'Documentation',
           url: '/docs',
           icon: IconDocumentation,
+        },
+        {
+          text: 'Templates',
+          url: '/templates',
+          icon: Layout,
         },
         {
           text: 'Integrations',
