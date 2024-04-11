@@ -9,11 +9,11 @@ import page from '~/data/products/functions/page'
 
 import DefaultLayout from '~/components/Layouts/Default'
 import SectionContainer from '~/components/Layouts/SectionContainer'
+import ExamplesCarousel from '~/components/Examples/ExamplesCarousel'
 import ProductHeader from '~/components/Sections/ProductHeader2'
 import HighlightColumns from '~/components/Sections/HighlightColumns'
 import ProductsNav from '~/components/Products/ProductsNav'
 
-const ExamplesCarousel = dynamic(() => import('~/components/Examples/ExamplesCarousel'))
 const GlobalPresenceSection = dynamic(
   () => import('~/components/Products/Functions/GlobalPresenceSection')
 )
