@@ -83,14 +83,14 @@ export const days: AdventDay[] = [
     ],
   },
   {
-    title: 'Supabase acquires Oriole',
+    title: 'Oriole joins Supabase',
     description:
       'The Oriole team are joining Supabase to build a faster storage engine for Postgres.',
     id: 'oriole',
     is_shipped: true,
     links: [
       {
-        url: 'https://supabase.com/blog/supabase-aquires-oriole',
+        url: '/blog/supabase-aquires-oriole',
         label: 'Blog post',
         target: '_blank',
       },
