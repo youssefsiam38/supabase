@@ -1,3 +1,4 @@
+import { type MDXRemoteSerializeResult } from 'next-mdx-remote'
 import { enrichedOperation } from '~/lib/refGenerator/helpers'
 
 export interface ISpec {
@@ -66,6 +67,8 @@ export interface ICommonFunction extends ICommonBaseSection {
   type: 'function'
   product: string
   parent?: string
+  description?: string
+  notes?: string
 }
 
 export interface ICommonCliCommand extends ICommonBaseSection {
@@ -91,6 +94,22 @@ export interface IRefFunctionSection {
   spec: any
   typeSpec?: TypeSpec
 }
+
+export interface ICompiledMarkdown extends ICommonMarkdown {
+  compiled: MDXRemoteSerializeResult | false
+  meta?: Record<string, unknown>
+}
+
+export interface IAnnotatedFunction extends ICommonFunction {
+  details?: any
+}
+
+export type IProcessedCommonSection =
+  | Exclude<ICommonSection, ICommonMarkdown | ICommonFunction>
+  | ICompiledMarkdown
+  | IAnnotatedFunction
+
+export type IProcessedCommonItem = ICommonCategory | ICommonSection
 
 export interface IRefStaticDoc {
   id: string

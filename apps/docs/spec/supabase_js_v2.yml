@@ -1574,7 +1574,23 @@ functions:
           ```
   - id: select
     title: 'Fetch data: select()'
-    $ref: '@supabase/postgrest-js.PostgrestQueryBuilder.select'
+    params:
+      - name: columns
+        isOptional: true
+        type: string
+        description: The columns to retrieve, separated by commas. Columns can be renamed when returned with `customName:columnName`
+      - name: options
+        isOptional: true
+        type: object
+        subContent:
+          - name: count
+            isOptional: true
+            type: '"exact" | "planned" | "estimated"'
+            description: "Count algorithm to use to count rows in the table or view. `exact`: Exact but slow count algorithm. Performs a `COUNT(*)` under the hood. `planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. `estimated`: Uses exact count for low numbers and planned count for high numbers."
+          - name: head
+            isOptional: true
+            type: boolean
+            description: When set to `true`, `data` will not be returned. Useful if you only need the count.
     notes: |
       - By default, Supabase projects return a maximum of 1,000 rows. This setting can be changed in your project's [API settings](/dashboard/project/_/settings/api). It's recommended that you keep it low to limit the payload size of accidental or malicious requests. You can use `range()` queries to paginate through your data.
       - `select()` can be combined with [Filters](/docs/reference/javascript/using-filters)
