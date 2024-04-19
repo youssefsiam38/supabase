@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { useTheme } from 'next-themes'
 import { Badge, IconDiscord, IconGitHubSolid, IconTwitterX, IconYoutubeSolid, cn } from 'ui'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -17,12 +16,11 @@ interface Props {
 }
 
 const Footer = (props: Props) => {
-  const { resolvedTheme } = useTheme()
   const { pathname } = useRouter()
 
   const isLaunchWeek = pathname.includes('/launch-week')
   const isGAWeek = pathname.includes('/ga-week')
-  const forceDark = isLaunchWeek || pathname === '/'
+  const forceDark = isLaunchWeek
 
   if (props.hideFooter) {
     return null

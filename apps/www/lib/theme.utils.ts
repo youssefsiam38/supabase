@@ -7,7 +7,7 @@ export function useForceDeepDark() {
   const { resolvedTheme, theme } = useTheme()
 
   const isDarkTheme = resolvedTheme?.includes('dark')
-  const forceDarkMode = router.pathname === '/' || router.pathname.startsWith('/launch-week')
+  const forceDarkMode = router.pathname.startsWith('/launch-week')
   const isGaSection = router.pathname.includes('/ga-week') || router.pathname === '/ga'
 
   useEffect(() => {
