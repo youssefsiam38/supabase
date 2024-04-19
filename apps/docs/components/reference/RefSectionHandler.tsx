@@ -10,13 +10,12 @@ import RefSubLayout from '~/layouts/ref/RefSubLayout'
 import ApiOperationSection from './ApiOperationSection'
 import CliCommandSection from './CLICommandSection'
 import OldVersionAlert from './OldVersionAlert'
-import { IAPISpec, ICommonSection, IRefStaticDoc, ISpec, TypeSpec } from './Reference.types'
+import { IAPISpec, ICommonSection, IRefStaticDoc, ISpec } from './Reference.types'
 import { MainSkeleton } from '~/layouts/MainSkeleton'
 
 interface RefSectionHandlerProps {
   sections: ICommonSection[]
   spec?: ISpec | IAPISpec
-  typeSpec?: TypeSpec
   pageProps: { docs: IRefStaticDoc[] }
   type: 'client-lib' | 'cli' | 'api'
   isOldVersion?: boolean
@@ -101,7 +100,6 @@ const RefSectionHandler = (props: RefSectionHandlerProps) => {
                     funcData={section}
                     commonFuncData={section}
                     spec={props.spec}
-                    typeSpec={props.typeSpec}
                   />
                 )
               case 'cli-command':

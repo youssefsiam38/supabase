@@ -1,0 +1,2 @@
+id = "on-auth-state-change"
+description = "Listen for Auth events."

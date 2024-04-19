@@ -18,12 +18,7 @@ const RefFunctionSection: React.FC<IRefFunctionSection> = (props) => {
   // gracefully return nothing if function does not exist
   if (!item) return <></>
 
-  const hasTsRef = item['$ref'] || null
-
-  const tsDefinition =
-    hasTsRef && props.typeSpec ? extractTsDocNode(hasTsRef, props.typeSpec) : null
-  const parameters = hasTsRef && tsDefinition ? generateParameters(tsDefinition) : item.params
-  const shortText = hasTsRef && tsDefinition ? tsDefinition.signatures[0].comment?.shortText : ''
+  const parameters = item.params
 
   return (
     <>
@@ -36,9 +31,6 @@ const RefFunctionSection: React.FC<IRefFunctionSection> = (props) => {
       >
         <RefSubLayout.Details>
           <>
-            <header className={['prose'].join(' ')}>
-              {shortText && <ReactMarkdown className="text-sm">{shortText}</ReactMarkdown>}
-            </header>
             {item.description && (
               <div className="prose">
                 <ReactMarkdown className="text-sm">{item.description}</ReactMarkdown>

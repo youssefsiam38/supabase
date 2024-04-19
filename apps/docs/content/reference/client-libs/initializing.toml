@@ -1,0 +1,7 @@
+id = "initializing"
+title = "Initializing"
+
+description = """
+You can initialize a new Supabase client using the <SUBSTITUTION.METHOD_NAME> method.
+
+The Supabase client is your entrypoint to the rest of the Supabase functionality and is the easiest way to interact with everything we offer within the Supabase ecosystem."""

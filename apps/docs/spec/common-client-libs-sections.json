@@ -392,9 +392,9 @@
     "title": "Auth",
     "items": [
       {
-        "id": "auth-api",
+        "id": "auth-overview",
         "title": "Overview",
-        "slug": "auth-api",
+        "slug": "auth-overview",
         "type": "function"
       },
       {

@@ -1,0 +1,89 @@
+method_name = "signUp()"
+
+[substitutions.other]
+get_user = "getUser()"
+
+[[examples]]
+id = "sign-up"
+name = "Sign up with an email and password"
+
+code = """
+```js
+const { data, error } = await supabase.auth.signUp({
+    email: 'example@email.com',
+    password: 'example-password',
+})
+```"""
+
+[[examples]]
+id = "sign-up-phone"
+name = "Sign up with a phone number and password (SMS)"
+
+code = """
+```js
+const { data, error } = await supabase.auth.signUp({
+    phone: '123456789',
+    password: 'example-password',
+    options: {
+        channel: 'sms'
+    }
+})
+```"""
+
+[[examples]]
+id = "sign-up-phone-whatsapp"
+name = "Sign up with a phone number and password (whatsapp)"
+
+description = """
+The user will be sent a WhatsApp message which contains a OTP. By default, a given user can only request a OTP once every 60 seconds. Note that a user will need to have a valid WhatsApp account that is linked to Twilio in order to use this feature."""
+
+code = """
+```js
+const { data, error } = await supabase.auth.signUp({
+    phone: '123456789',
+    password: 'example-password',
+    options: {
+        channel: 'whatsapp'
+    }
+})
+```"""
+
+[[examples]]
+id = "sign-up-with-additional-user-metadata"
+name = "Sign up with additional user metadata"
+
+code = """
+```js
+const { data, error } = await supabase.auth.signUp(
+    {
+        email: 'example@email.com',
+        password: 'example-password',
+        options: {
+            data: {
+                first_name: 'John',
+                age: 27,
+            }
+        }
+    }
+)
+```"""
+
+[[examples]]
+id = "sign-up-with-redirect"
+name = "Sign up with a redirect URL"
+
+description = """
+- See [redirect URLs and wildcards](/docs/guides/auth#redirect-urls-and-wildcards) to add additional redirect URLs to your project."""
+
+code = """
+```js
+const { data, error } = await supabase.auth.signUp(
+    {
+        email: 'example@email.com',
+        password: 'example-password',
+        options: {
+            emailRedirectTo: 'https://example.com/welcome'
+        }
+    }
+)
+```"""

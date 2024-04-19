@@ -1,0 +1,9 @@
+libraries = ['js']
+
+[js]
+versions = ['2_0', '1_0']
+
+[js.namespaces]
+auth = "supabase.auth"
+functions = "supabase.functions"
+storage = "supabase.storage"

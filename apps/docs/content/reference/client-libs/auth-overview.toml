@@ -1,0 +1,8 @@
+id = "auth-overview"
+title = "Overview"
+
+notes = """
+- The Auth methods can be accessed via the `<SUBSTITUTION.NAMESPACE.AUTH>` namespace.
+- Any email links and one-time passwords (OTPs) sent have a default expiry of 24 hours. We have the following [rate limits](/docs/guides/platform/going-into-prod#auth-rate-limits) in place to guard against brute force attacks.
+- The expiry of an access token can be set in the "JWT expiry limit" field in [your project's auth settings](/dashboard/project/_/settings/auth). A refresh token never expires and can only be used once.
+"""

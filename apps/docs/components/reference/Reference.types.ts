@@ -92,15 +92,16 @@ export interface IRefFunctionSection {
   funcData: any
   commonFuncData: ICommonFunction
   spec: any
-  typeSpec?: TypeSpec
 }
 
 export interface ICompiledMarkdown extends ICommonMarkdown {
-  compiled: MDXRemoteSerializeResult | false
+  __EMPTY: boolean
+  compiled?: MDXRemoteSerializeResult
   meta?: Record<string, unknown>
 }
 
 export interface IAnnotatedFunction extends ICommonFunction {
+  __EMPTY: boolean
   details?: any
 }
 
@@ -124,47 +125,4 @@ export interface IRefStaticDoc {
     frontmatter: {}
     scope: {}
   }
-}
-
-export type TypeSpec = {
-  name: string
-  children: TypeSpecChild[]
-}
-
-export type TypeSpecChild = {
-  id: number
-  name: string
-  kind: number
-  kindString?: string
-  flags?: {}
-  originalName?: string
-  children?: TypeSpecChild[]
-  defaultValue?: string
-  default?: any
-  groups?: any
-  sources?: any
-  target?: any
-  comment?: TypeSpecChildComment
-  typeParameter?: any
-  implementedTypes?: any
-  extendedTypes?: any
-  dereferenced?: TypeSpecChild
-  extendedBy?: any
-  indexSignature?: any
-  extendsType?: any
-  objectType?: any
-  trueType?: any
-  falseType?: any
-  type?: any
-  signatures?: any
-  overwrites?: any
-  inheritedFrom?: any
-  implementationOf?: any
-}
-
-export interface TypeSpecChildComment {
-  shortText?: string
-  text?: string | null
-  returns?: string | null
-  tags?: any
 }
