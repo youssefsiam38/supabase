@@ -38,7 +38,16 @@ const Home: NextPageWithLayout = () => {
 
   return (
     <div className="w-full mx-auto my-16 space-y-16 max-w-7xl">
-      <ComputeBadgeWrapper project={{ ...project } as ProjectInfo} />
+      <div className="flex items-center justify-between mx-6 space-x-6">
+        <div className="flex flex-row items-center gap-3">
+          <h1 className="text-3xl">{projectName}</h1>
+          <ComputeBadgeWrapper project={{ ...project } as ProjectInfo} />
+        </div>
+        <div className="flex items-center gap-x-3">
+          {IS_PLATFORM && project?.status === PROJECT_STATUS.ACTIVE_HEALTHY && <ServiceStatus />}
+          {IS_PLATFORM && project?.status === PROJECT_STATUS.ACTIVE_HEALTHY && <Connect />}
+        </div>
+      </div>
 
       <div className="mx-6">
         <ProjectUpgradeFailedBanner />
