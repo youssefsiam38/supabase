@@ -223,7 +223,6 @@ const OrganizationProjects = ({
           ) : (
             filteredProjects?.map((project) => (
               <ProjectCard
-                organization={organization}
                 key={makeRandomString(5)}
                 project={project}
                 rewriteHref={rewriteHref ? rewriteHref(project.ref) : undefined}
