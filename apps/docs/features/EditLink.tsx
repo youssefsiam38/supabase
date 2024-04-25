@@ -57,7 +57,9 @@ const useAddEditLink = (editLink: IEditLink) => {
 
   useEffect(() => {
     setEditLinks?.((currLinks) => [...currLinks, editLink])
-    return () => setEditLinks?.((currLinks) => currLinks.filter((link) => link !== editLink))
+    return () => {
+      setEditLinks?.((currLinks) => currLinks.filter((link) => link !== editLink))
+    }
   }, [editLink, setEditLinks])
 }
 

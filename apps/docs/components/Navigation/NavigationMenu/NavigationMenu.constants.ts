@@ -169,6 +169,12 @@ export const HOMEPAGE_MENU_ITEMS: HomepageMenuItems = [
       href: 'https://supabase.com/partners/integrations',
       level: 'integrations',
     },
+    {
+      label: 'Troubleshooting',
+      icon: 'troubleshooting',
+      href: '/troubleshooting',
+      level: 'troubleshooting',
+    },
   ],
   [
     {
@@ -1969,6 +1975,17 @@ export const self_hosting: NavMenuConstant = {
           items: [],
         },
       ],
+    },
+  ],
+}
+
+export const troubleshooting = {
+  title: 'Troubleshooting',
+  url: '/troubleshooting',
+  items: [
+    {
+      name: 'Error Codes',
+      url: '/troubleshooting/error-codes',
     },
   ],
 }

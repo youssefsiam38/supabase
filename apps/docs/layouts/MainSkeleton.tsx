@@ -76,6 +76,10 @@ const levelsData = {
     icon: 'integrations',
     name: 'Integrations',
   },
+  troubleshooting: {
+    icon: 'platform', // TEMPORARY
+    name: 'Troubleshooting',
+  },
   reference_javascript_v1: {
     icon: 'reference-javascript',
     name: 'Javascript Reference v1.0',

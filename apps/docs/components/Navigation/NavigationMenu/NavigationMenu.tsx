@@ -18,6 +18,7 @@ enum MenuId {
   Resources = 'resources',
   SelfHosting = 'self_hosting',
   Integrations = 'integrations',
+  Troubleshooting = 'troubleshooting',
   Cli = 'supabase_cli',
   RefJavaScriptV1 = 'reference_javascript_v1',
   RefJavaScriptV2 = 'reference_javascript_v2',
@@ -120,6 +121,10 @@ const menus: Menu[] = [
   },
   {
     id: MenuId.Cli,
+    type: 'guide',
+  },
+  {
+    id: MenuId.Troubleshooting,
     type: 'guide',
   },
   {

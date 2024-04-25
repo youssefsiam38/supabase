@@ -76,6 +76,7 @@ function getMenuIcon(menuKey: string, width: number = 16, height: number = 16, c
       return <IconMenuCli width={width} height={height} className={className} />
     case 'status':
       return <IconMenuStatus width={width} height={height} className={className} />
+    case 'troubleshooting': // Placeholder for now
     default:
       return <IconMenuPlatform width={width} height={height} className={className} />
   }

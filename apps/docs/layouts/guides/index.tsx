@@ -44,8 +44,7 @@ const Layout: FC<Props> = (props) => {
           ? props.editLink
           : `https://github.com/${
               props.editLink || `supabase/supabase/edit/master/apps/docs/pages${router.asPath}.mdx`
-            }
-`,
+            }`,
     }),
     [props.editLink, router.asPath]
   )
