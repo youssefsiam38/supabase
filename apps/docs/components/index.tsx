@@ -23,6 +23,7 @@ import RefHeaderSection from './reference/RefHeaderSection'
 
 // Other components
 import AuthProviders from '~/components/AuthProviders'
+import { ErrorCodesTable } from '~/components/ErrorCodes.Table'
 import Options from '~/components/Options'
 import Param from '~/components/Params'
 import { ProjectConfigVariables } from './ProjectConfigVariables'
@@ -91,6 +92,7 @@ const components = {
   CliGlobalFlagsHandler: () => <CliGlobalFlagsHandler />,
   CodeBlock,
   DatabaseSetup,
+  ErrorCodesTable,
   Extensions,
   GetSessionWarning,
   GlassPanel,
