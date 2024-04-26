@@ -34,10 +34,10 @@ const ErrorCodesTable = ({ product }: { product: ErrorCodesProduct }) => {
         {productCodesMap[product].map((errorCode) => (
           <tr key={errorCode.errorCode}>
             <td>{errorCode.errorCode}</td>
-            <td>{errorCode.description}</td>
+            <td>{errorCode.description ?? '-'}</td>
             <td>{errorCode.statusCode ?? '-'}</td>
             <td>
-              <ReactMarkdown>{errorCode.resolution}</ReactMarkdown>
+              <ReactMarkdown>{errorCode.resolution ?? '-'}</ReactMarkdown>
             </td>
           </tr>
         ))}

@@ -1,8 +1,8 @@
 interface ErrorCode {
   errorCode: string
-  description: string
-  statusCode: number | null
-  resolution: string
+  description?: string
+  statusCode?: string
+  resolution?: string
 }
 
 export type { ErrorCode }
