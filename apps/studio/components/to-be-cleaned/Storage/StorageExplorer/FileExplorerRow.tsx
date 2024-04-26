@@ -96,7 +96,6 @@ export interface FileExplorerRowProps {
   columnIndex: number
   selectedItems: StorageItemWithColumn[]
   openedFolders: StorageItem[]
-  selectedFilePreview: (StorageItemWithColumn & { previewUrl: string | undefined }) | null
   onCopyUrl: (name: string, url: string) => void
 }
 
@@ -129,6 +128,7 @@ const FileExplorerRow: ItemRenderer<StorageItem, FileExplorerRowProps> = ({
     downloadFile,
     downloadFolder,
     selectRangeItems,
+    selectedFilePreview,
   } = storageExplorerStore
 
   const isPublic = selectedBucket.public
