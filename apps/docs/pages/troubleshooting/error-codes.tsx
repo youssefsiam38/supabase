@@ -1,10 +1,10 @@
+import { ChevronDown } from 'lucide-react'
 import { type PropsWithChildren, createContext, useContext, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import {
   Input_Shadcn_,
   SelectContent_Shadcn_,
   SelectItem_Shadcn_,
-  SelectLabel_Shadcn_,
   SelectTrigger_Shadcn_,
   SelectValue_Shadcn_,
   Select_Shadcn_,
@@ -64,7 +64,7 @@ const ErrorCodesReference = () => {
 
   return (
     <ErrorCodesReferenceCtx.Provider value={ctx}>
-      <section aria-labelledby="error-codes-reference-table-title">
+      <section aria-labelledby="error-codes-reference-table-title" className="mr-12">
         <h2 id="error-codes-reference-table-title" className="mb-12">
           Error codes reference
         </h2>
@@ -106,7 +106,7 @@ const ErrorCodesReference = () => {
               <th>Error code</th>
               <th>Status code</th>
               <th>Description</th>
-              <th>Resolution</th>
+              <th className="sr-only">Toggle</th>
             </tr>
           </thead>
           <tbody>
@@ -153,6 +153,7 @@ const Selector = ({
 
 const ErrorCodesRow = ({ product, errorCode }: { product: Product; errorCode: ErrorCode }) => {
   const { productFilter, statusCodeFilter, searchTerm } = useContext(ErrorCodesReferenceCtx)
+  const [showResolution, setShowResolution] = useState(false)
 
   const visible =
     (!productFilter || productFilter === product) &&
@@ -161,15 +162,37 @@ const ErrorCodesRow = ({ product, errorCode }: { product: Product; errorCode: Er
 
   return (
     visible && (
-      <tr>
-        <td>{leadingCap(product)}</td>
-        <td>{errorCode.errorCode ?? '-'}</td>
-        <td>{errorCode.statusCode ?? '-'}</td>
-        <td>{errorCode.description ?? '-'}</td>
-        <td>
-          <ReactMarkdown>{errorCode.resolution}</ReactMarkdown>
-        </td>
-      </tr>
+      <>
+        <tr>
+          <td>{leadingCap(product)}</td>
+          <td>{errorCode.errorCode ?? '-'}</td>
+          <td>{errorCode.statusCode ?? '-'}</td>
+          <td>{errorCode.description ?? '-'}</td>
+          <td className="align-middle">
+            {errorCode.resolution && (
+              <button
+                className="align-middle"
+                aria-label={`${showResolution ? 'Hide' : 'Show'} recommended resolution in next row`}
+                aria-expanded={showResolution}
+                onClick={() => setShowResolution((show) => !show)}
+              >
+                <ChevronDown
+                  strokeWidth={1}
+                  className={cn(showResolution && 'rotate-180', 'transition-transform')}
+                />
+              </button>
+            )}
+          </td>
+        </tr>
+        {showResolution && (
+          <tr>
+            <td colSpan={5}>
+              <h6 className="m-0">Resolution</h6>
+              <ReactMarkdown>{errorCode.resolution}</ReactMarkdown>
+            </td>
+          </tr>
+        )}
+      </>
     )
   )
 }
