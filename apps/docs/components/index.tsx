@@ -4,7 +4,16 @@
 
 // Basic UI things
 import Link from 'next/link'
-import { Accordion, Admonition, Alert, Button, CodeBlock, markdownComponents, Tabs } from 'ui'
+import {
+  Accordion,
+  Admonition,
+  Alert,
+  Badge,
+  Button,
+  CodeBlock,
+  markdownComponents,
+  Tabs,
+} from 'ui'
 import { GlassPanel } from 'ui-patterns/GlassPanel'
 import { IconPanel } from 'ui-patterns/IconPanel'
 import { ThemeImage } from 'ui-patterns/ThemeImage'
@@ -23,6 +32,7 @@ import RefHeaderSection from './reference/RefHeaderSection'
 
 // Other components
 import AuthProviders from '~/components/AuthProviders'
+import { MaturityModel } from '~/components/MaturityModel'
 import Options from '~/components/Options'
 import Param from '~/components/Params'
 import { ProjectConfigVariables } from './ProjectConfigVariables'
@@ -65,7 +75,7 @@ import {
   IconMenuStorage,
   IconMenuSwift,
 } from './Navigation/NavigationMenu/HomeMenuIcons'
-import { IconArrowDown, IconCheck } from 'ui'
+import { ArrowDown as IconArrowDown, Check as IconCheck, X as IconX } from 'lucide-react'
 
 // Heavy/rare (lazy-loaded)
 import { AppleSecretGenerator } from './AppleSecretGenerator'
@@ -85,6 +95,7 @@ const components = {
   ),
   AppleSecretGenerator,
   AuthProviders,
+  Badge,
   Button,
   ButtonCard,
   CH,
@@ -133,10 +144,12 @@ const components = {
   IconMenuStorage,
   IconMenuSwift,
   IconPanel,
+  IconX,
   Image: (props: any) => <ThemeImage fill className="object-contain" {...props} />,
   JwtGenerator,
   KotlinProjectSetup,
   Link,
+  MaturityModel,
   Mermaid,
   MigrationWarnings,
   NavData,

@@ -78,22 +78,10 @@ export const HOMEPAGE_MENU_ITEMS: HomepageMenuItems = [
       label: 'Development Cycle',
     },
     {
-      label: 'Local Dev / CLI',
+      label: 'Environments',
       icon: 'dev-cli',
-      href: '/guides/cli',
-      level: 'reference_javascript',
-    },
-    {
-      label: 'Platform',
-      icon: 'platform',
-      href: '/guides/platform',
-      level: 'platform',
-    },
-    {
-      label: 'Self-Hosting',
-      icon: 'self-hosting',
-      href: '/guides/self-hosting',
-      level: 'self_hosting',
+      href: '/guides/environments',
+      level: 'cli', // probably wrong
     },
   ],
   [
@@ -1668,6 +1656,18 @@ export const supabase_cli: NavMenuConstant = {
           url: '/guides/cli/github-action/backups',
         },
       ],
+    },
+  ],
+}
+
+export const environments: NavMenuConstant = {
+  title: 'Environments & CI',
+  icon: 'cli',
+  url: '/guides/environments',
+  items: [
+    {
+      name: 'Maturity model',
+      url: '/guides/environments/maturity-model',
     },
   ],
 }

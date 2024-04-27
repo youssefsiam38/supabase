@@ -60,6 +60,10 @@ const levelsData = {
     icon: 'reference-cli',
     name: 'Supabase CLI',
   },
+  environments: {
+    icon: 'reference-cli',
+    name: 'Environments',
+  },
   platform: {
     icon: 'platform',
     name: 'Platform',
