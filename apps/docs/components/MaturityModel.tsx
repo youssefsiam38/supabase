@@ -3,10 +3,10 @@
 import { useSticky } from 'common'
 import { Check, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react'
-import { Badge } from 'ui'
+import { Badge, cn } from 'ui'
 
-const MaturityModel = ({ children }: PropsWithChildren) => (
-  <div className="@container">
+const MaturityModel = ({ className, children }: PropsWithChildren<{ className?: string }>) => (
+  <div className={cn('@container', className)}>
     <div className="grid @lg:grid-cols-[auto_1fr] gap-x-20 gap-y-4">{children}</div>
   </div>
 )

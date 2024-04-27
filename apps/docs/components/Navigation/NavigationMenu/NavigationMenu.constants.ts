@@ -1669,6 +1669,36 @@ export const environments: NavMenuConstant = {
       name: 'Maturity model',
       url: '/guides/environments/maturity-model',
     },
+    {
+      name: 'Local development',
+      url: undefined,
+      items: [
+        {
+          name: 'Local development workflow',
+          url: '/guides/environments/local-development',
+        },
+      ],
+    },
+    {
+      name: 'Production readiness',
+      url: undefined,
+      items: [
+        {
+          name: 'Shared responsibility model',
+          url: '/guides/environments/shared-responsibility-model',
+        },
+      ],
+    },
+    {
+      name: 'CLI',
+      url: undefined,
+      items: [
+        {
+          name: 'Getting started',
+          url: '/guides/environments/cli-getting-started',
+        },
+      ],
+    },
   ],
 }
 
