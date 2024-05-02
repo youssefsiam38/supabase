@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import type { NavMenuSection } from '~/components/Navigation/Navigation.types'
 import NavigationMenuHome from './HomeMenu'
 import NavigationMenuGuideList from './NavigationMenuGuideList'
 import NavigationMenuRefList from './NavigationMenuRefList'
@@ -39,6 +40,8 @@ enum MenuId {
   SelfHostingFunctions = 'reference_self_hosting_functions',
 }
 
+type MenuProps = { menuId: MenuId; menuItems?: Partial<NavMenuSection>[] }
+
 interface BaseMenu {
   id: MenuId
   type: string
@@ -59,7 +62,11 @@ interface ReferenceMenu extends BaseMenu {
   specFile?: string
 }
 
-type Menu = HomeMenu | GuideMenu | ReferenceMenu
+interface ReferenceMenuV2 extends BaseMenu {
+  type: 'referenceV2'
+}
+
+type Menu = HomeMenu | GuideMenu | ReferenceMenu | ReferenceMenuV2
 
 const menus: Menu[] = [
   {
@@ -131,10 +138,7 @@ const menus: Menu[] = [
   },
   {
     id: MenuId.RefJavaScriptV2,
-    commonSectionsFile: 'common-client-libs-sections.json',
-    specFile: 'supabase_js_v2.yml',
-    type: 'reference',
-    path: '/reference/javascript',
+    type: 'referenceV2',
   },
   {
     id: MenuId.RefDartV1,
@@ -265,17 +269,20 @@ function getMenuElement(menu: Menu | undefined) {
           specFile={menu.specFile}
         />
       )
+    case 'referenceV2':
+      return 'REF MENU V2'
     default:
       throw new Error(`Unknown menu type '${menuType}'`)
   }
 }
 
-const NavigationMenu = ({ menuId }: { menuId: MenuId }) => {
-  const level = menuId
-  const menu = getMenuById(level)
+const NavigationMenu = ({ menu }: { menu: MenuProps }) => {
+  const menuMeta: Menu & { menuItems?: MenuProps['menuItems'] } = getMenuById(menu.menuId)!
+  if (menu.menuId) menuMeta.menuItems = menu.menuItems
 
-  return getMenuElement(menu)
+  return getMenuElement(menuMeta)
 }
 
 export { MenuId }
+export type { MenuProps }
 export default memo(NavigationMenu)

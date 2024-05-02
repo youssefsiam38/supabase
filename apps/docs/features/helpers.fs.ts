@@ -1,4 +1,8 @@
-import { stat } from 'fs/promises'
+import { stat } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const ROOT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 const existsFile = async (fullPath: string) => {
   try {
@@ -9,4 +13,4 @@ const existsFile = async (fullPath: string) => {
   }
 }
 
-export { existsFile }
+export { ROOT_DIR, existsFile }

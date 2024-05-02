@@ -3,13 +3,14 @@
 import { useTheme } from 'next-themes'
 import Image from 'next/legacy/image'
 import Link from 'next/link'
-import { type PropsWithChildren, memo, useEffect } from 'react'
-
 import { cn } from 'ui'
-
+import { type PropsWithChildren, memo, useEffect } from 'react'
 import Footer from '~/components/Navigation/Footer'
 import HomeMenuIconPicker from '~/components/Navigation/NavigationMenu/HomeMenuIconPicker'
-import NavigationMenu, { type MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
+import NavigationMenu, {
+  type MenuProps,
+  type MenuId,
+} from '~/components/Navigation/NavigationMenu/NavigationMenu'
 import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
 import { DOCS_CONTENT_CONTAINER_ID } from '~/features/ui/helpers.constants'
 import { menuState, useMenuMobileOpen } from '~/hooks/useMenuState'
@@ -294,7 +295,7 @@ const Container = memo(function Container({ children }: PropsWithChildren) {
   )
 })
 
-const NavContainer = memo(function NavContainer({ menuId }: { menuId: MenuId }) {
+const NavContainer = memo(function NavContainer({ menu }: { menu: MenuProps }) {
   const mobileMenuOpen = useMenuMobileOpen()
 
   return (
@@ -353,17 +354,17 @@ const NavContainer = memo(function NavContainer({ menuId }: { menuId: MenuId }) 
             'lg:opacity-100 lg:visible',
           ].join(' ')}
         >
-          <NavigationMenu menuId={menuId} />
+          <NavigationMenu menu={menu} />
         </div>
       </div>
     </nav>
   )
 })
 
-function MainSkeleton({ children, menuId }: PropsWithChildren<{ menuId: MenuId }>) {
+function MainSkeleton({ children, menu }: PropsWithChildren<{ menu: MenuProps }>) {
   return (
     <div className="flex flex-row h-full">
-      <NavContainer menuId={menuId} />
+      <NavContainer menu={menu} />
       <Container>
         <div className="lg:sticky top-0 z-10">
           <TopNavBar />
@@ -376,7 +377,7 @@ function MainSkeleton({ children, menuId }: PropsWithChildren<{ menuId: MenuId }
           ].join(' ')}
         >
           <div className={['lg:hidden', 'px-3.5', 'border-b z-10'].join(' ')}>
-            <MobileHeader menuId={menuId} />
+            <MobileHeader menuId={menu.menuId} />
           </div>
         </div>
         {children}
