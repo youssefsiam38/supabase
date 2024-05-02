@@ -176,5 +176,5 @@ const flatten = <T extends object, K extends string | number | symbol>(
     return acc
   }, [] as T[])
 
-export { getRefDataForLib }
+export { getRefDataForLib, isAnnotatedFunction, isAnnotatedMarkdown }
 export type { IAnnotatedCommon, AnnotatedFunction, AnnotatedMarkdown }
