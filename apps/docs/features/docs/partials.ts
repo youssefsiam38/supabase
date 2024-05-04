@@ -41,13 +41,51 @@ const _getPartialPath = (tag: string) => {
   return join(PARTIALS_DIR, `${relPath.replaceAll('/', sep)}.mdx`)
 }
 
-const getPartialContent = async (relPath: string) => {
+const _extractSubstitutions = (tag: string) => {
+  const regex = /substitutions\s*?=\s*?\{(\{[^}]+(?:\}[^\}][^}]*)*?\})\}\s+/
+  const subs = tag.match(regex)?.[1]
+  if (!subs) return null
+
   try {
-    const filePath = _getPartialPath(relPath)
-    const content = await readFile(filePath, 'utf8')
-    return content.trim()
+    const json = subs.replace(/(['"])?([a-zA-Z0-9]+)\1:/g, '"$2":')
+    return JSON.parse(json)
   } catch (err) {
-    throw Error(`Error getting partial content from ${relPath}`, { cause: err })
+    throw Error(`Error parsing props for tag ${tag}`, { cause: err })
+  }
+}
+
+const _replaceSubstitutions = (str: string, substitutions: Record<string, unknown>) => {
+  let replaced = str
+  const regex = /\{\s*substitution\.([^\s\}]+)\s*\}/g
+
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(replaced)) !== null) {
+    const idx = match.index
+    const splicedOut = match[0]
+    const key = match[1]
+
+    const valueAsAny = substitutions[key]
+    if (valueAsAny === undefined) {
+      throw Error(`Missing substitution for key ${key}`)
+    }
+    const value = String(valueAsAny)
+
+    replaced = replaced.substring(0, idx) + value + replaced.substring(idx + splicedOut.length)
+    regex.lastIndex += value.length - splicedOut.length
+  }
+
+  return replaced
+}
+
+const _getPartialContent = async (tag: string) => {
+  try {
+    const filePath = _getPartialPath(tag)
+    const content = (await readFile(filePath, 'utf8')).trim()
+
+    const substitutions = _extractSubstitutions(tag)
+    return substitutions ? _replaceSubstitutions(content, substitutions) : content
+  } catch (err) {
+    throw Error(`Error getting partial content from ${tag}`, { cause: err })
   }
 }
 
@@ -55,10 +93,16 @@ const fillOutPartials = async (content: string) => {
   let replaced = content
 
   do {
-    replaced = await _swapPartials(replaced, getPartialContent)
+    replaced = await _swapPartials(replaced, _getPartialContent)
   } while (PARTIAL_REGEX.test(replaced))
 
   return replaced
 }
 
-export { _swapPartials, _getPartialPath, fillOutPartials }
+export {
+  _swapPartials,
+  _getPartialPath,
+  _extractSubstitutions,
+  _replaceSubstitutions,
+  fillOutPartials,
+}
