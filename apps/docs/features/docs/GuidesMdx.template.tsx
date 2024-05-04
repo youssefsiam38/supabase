@@ -12,7 +12,6 @@ import GuidesTableOfContents from '~/components/GuidesTableOfContents'
 import { components } from '~/features/docs/mdx.shared'
 import type { WithRequired } from '~/features/helpers.types'
 import { type GuideFrontmatter } from '~/lib/docs'
-import { MDXProviderGuides } from './GuidesMdx.client'
 
 const codeHikeOptions: CodeHikeConfig = {
   theme: codeHikeTheme,
@@ -130,9 +129,7 @@ const GuideTemplate = ({ meta, content, children, editLink, mdxOptions }: GuideT
             <h2 className="mt-3 text-xl text-foreground-light">{meta.subtitle}</h2>
           )}
           <hr className="not-prose border-t-0 border-b my-8" />
-          <MDXProviderGuides>
-            {content && <MDXRemoteGuides source={content} options={mdxOptions} />}
-          </MDXProviderGuides>
+          {content && <MDXRemoteGuides source={content} options={mdxOptions} />}
           {children}
           <footer className="mt-16 not-prose">
             <a
