@@ -12,7 +12,7 @@ import remarkMath from 'remark-math'
 
 import codeHikeTheme from 'config/code-hike.theme.json' assert { type: 'json' }
 
-const DOCS_DIRECTORY = join(dirname(fileURLToPath(import.meta.url)), '..')
+export const DOCS_DIRECTORY = join(dirname(fileURLToPath(import.meta.url)), '..')
 export const GUIDES_DIRECTORY = join(DOCS_DIRECTORY, 'content/guides')
 
 export type GuideFrontmatter = {
