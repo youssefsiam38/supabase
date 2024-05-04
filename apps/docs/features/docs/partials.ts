@@ -8,7 +8,7 @@ const _swapPartials = async (original: string, replace: (spliced: string) => Pro
   const regex = /(?<=^|\n)([^\S\r\n]*)<\s*?Partial\s+?path\s*?=\s*?(['"])[\w\/-]+\2[^>]*\/>/g
 
   let match: RegExpExecArray | null
-  while ((match = regex.exec(original)) !== null) {
+  while ((match = regex.exec(replaced)) !== null) {
     const spliceOut = match[0]
     const indent = match[1]
 
@@ -43,7 +43,7 @@ const getPartialContent = async (relPath: string) => {
   try {
     const filePath = _getPartialPath(relPath)
     const content = await readFile(filePath, 'utf8')
-    return content
+    return content.trim()
   } catch (err) {
     throw Error(`Error getting partial content from ${relPath}`, { cause: err })
   }

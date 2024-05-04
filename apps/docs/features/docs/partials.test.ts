@@ -113,6 +113,52 @@ Substitution
     const actual = await _swapPartials(mdx, async () => 'Substitution')
     expect(actual).toEqual(mdx)
   })
+
+  it('All partials are replaced if there is more than one', async () => {
+    const mdx = `
+Partial one:
+
+<Partial path="one" />
+
+Some more text:
+
+<Partial path="two" />
+	  `.trim()
+
+    const expected = `
+Partial one:
+
+one
+
+Some more text:
+
+two
+	  `.trim()
+
+    const actual = await _swapPartials(mdx, async (str) => str.match(/"(\w+)"/)?.[1] ?? '')
+    expect(actual).toEqual(expected)
+  })
+
+  it('All partials are replaced if there is more than one and they are consecutive', async () => {
+    const mdx = `
+Partial one:
+
+<Partial path="one" />
+
+<Partial path="two" />
+	  `.trim()
+
+    const expected = `
+Partial one:
+
+one
+
+two
+	  `.trim()
+
+    const actual = await _swapPartials(mdx, async (str) => str.match(/"(\w+)"/)?.[1] ?? '')
+    expect(actual).toEqual(expected)
+  })
 })
 
 describe('Extract path from partial tag', () => {
