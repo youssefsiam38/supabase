@@ -1,13 +1,14 @@
 import matter from 'gray-matter'
 import { type Metadata, type ResolvingMetadata } from 'next'
 import { redirect } from 'next/navigation'
+import { watch } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { extname, join, sep } from 'node:path'
 import { existsFile } from '~/features/helpers.fs'
 import type { OrPromise } from '~/features/helpers.types'
 import { fillOutPartials } from '~/features/docs/partials'
 import { notFoundLink } from '~/features/recommendations/NotFound.utils'
-import { BASE_PATH, MISC_URL } from '~/lib/constants'
+import { BASE_PATH, IS_DEV, MISC_URL } from '~/lib/constants'
 import { GUIDES_DIRECTORY, isValidGuideFrontmatter, type GuideFrontmatter } from '~/lib/docs'
 import { newEditLink } from './GuidesMdx.template'
 
@@ -72,17 +73,25 @@ const getGuidesMarkdownInternal = async ({ slug }: { slug: string[] }) => {
  * Caching this for the entire process is fine because the Markdown content is
  * baked into each deployment and cannot change. There's also nothing sensitive
  * here: this is just reading the MDX files from our GitHub repo.
- *
- * TODO: Figure out how to cache-bust partials in development without
- * compromising error-checking...
  */
 const cache = <Args extends unknown[], Output>(fn: (...args: Args) => Promise<Output>) => {
   const _cache = new Map<string, Output>()
+
+  /**
+   * A quick and dirty way of cache-busting partials changes in development.
+   * Next.js isn't aware of dependencies on partials because we do a string
+   * replacement.
+   */
+  let CACHE_BUST_KEY = 0
+  if (IS_DEV) {
+    watch(join(GUIDES_DIRECTORY, '..', 'partials'), { recursive: true }, () => {
+      CACHE_BUST_KEY = ++CACHE_BUST_KEY % Number.MAX_SAFE_INTEGER
+      if (CACHE_BUST_KEY === 0) _cache.clear()
+    })
+  }
+
   return async (...args: Args) => {
-    /**
-     * This is rough but will do because it's just the params object.
-     */
-    const cacheKey = JSON.stringify(args)
+    const cacheKey = JSON.stringify([...args, CACHE_BUST_KEY])
     if (!_cache.has(cacheKey)) {
       _cache.set(cacheKey, await fn(...args))
     }
