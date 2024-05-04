@@ -1,3 +1,4 @@
+import fsPromises from 'node:fs/promises'
 import { join } from 'node:path'
 import { DOCS_DIR } from '~/features/helpers.fs'
 import {
@@ -5,6 +6,7 @@ import {
   _getPartialPath,
   _replaceSubstitutions,
   _swapPartials,
+  fillOutPartials,
 } from './partials'
 
 describe('Partials are detected in MDX content', () => {
@@ -268,6 +270,91 @@ describe('Replace substitutions', () => {
     const str = `{substitution.three} x {substitution.three} = 9`
     const expected = '3 x 3 = 9'
     const actual = _replaceSubstitutions(str, subs)
+    expect(actual).toBe(expected)
+  })
+})
+
+describe('Entire replacement workflow with mock fs', () => {
+  afterEach(() => jest.clearAllMocks())
+
+  it('Replaces partial with file contents', async () => {
+    const readFileMock = jest.spyOn(fsPromises, 'readFile')
+
+    readFileMock.mockImplementation((filePath: string) =>
+      filePath !== _getPartialPath('<Partial path="test/file/path" />')
+        ? Promise.reject()
+        : Promise.resolve(`A mock partial file.
+
+It contains a few paragraphs of content:
+
+1. With some indented bits.
+   Like this.
+2. And this.
+
+   And a trailing newline.
+`)
+    )
+
+    const mdx = `
+MDX file containing the partial.
+
+<Partial path="test/file/path" />
+
+End.
+	`.trim()
+
+    const expected = `
+MDX file containing the partial.
+
+A mock partial file.
+
+It contains a few paragraphs of content:
+
+1. With some indented bits.
+   Like this.
+2. And this.
+
+   And a trailing newline.
+
+End.
+   `.trim()
+
+    const actual = await fillOutPartials(mdx)
+    expect(actual).toBe(expected)
+  })
+
+  it('Replaces recursive partials', async () => {
+    const readFileMock = jest.spyOn(fsPromises, 'readFile')
+
+    readFileMock.mockImplementation((filePath: string) =>
+      filePath === _getPartialPath('<Partial path="test/file/one" />')
+        ? Promise.resolve(
+            `
+A mock partial file with nested partial:
+
+<Partial path="test/file/two" />
+		   `.trim()
+          )
+        : filePath === _getPartialPath('<Partial path="test/file/two" />')
+          ? Promise.resolve('A deeper layer of partials.')
+          : Promise.reject()
+    )
+
+    const mdx = `
+MDX file containing the partial.
+
+<Partial path="test/file/one" />
+	`.trim()
+
+    const expected = `
+MDX file containing the partial.
+
+A mock partial file with nested partial:
+
+A deeper layer of partials.
+   `.trim()
+
+    const actual = await fillOutPartials(mdx)
     expect(actual).toBe(expected)
   })
 })
