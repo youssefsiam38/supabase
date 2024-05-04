@@ -5,6 +5,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import { extname, join, sep } from 'node:path'
 import { existsFile } from '~/features/helpers.fs'
 import type { OrPromise } from '~/features/helpers.types'
+import { fillOutPartials } from '~/features/docs/partials'
 import { notFoundLink } from '~/features/recommendations/NotFound.utils'
 import { BASE_PATH, MISC_URL } from '~/lib/constants'
 import { GUIDES_DIRECTORY, isValidGuideFrontmatter, type GuideFrontmatter } from '~/lib/docs'
@@ -52,10 +53,12 @@ const getGuidesMarkdownInternal = async ({ slug }: { slug: string[] }) => {
     `supabase/supabase/blob/master/apps/docs/content/guides/${relPath}.mdx`
   )
 
-  const { data: meta, content } = matter(mdx)
+  const { data: meta, content: contentNoPartials } = matter(mdx)
   if (!isValidGuideFrontmatter(meta)) {
     throw Error('Type of frontmatter is not valid')
   }
+
+  const content = await fillOutPartials(contentNoPartials)
 
   return {
     pathname: `/guides/${slug.join('/')}` satisfies `/${string}`,
@@ -69,6 +72,9 @@ const getGuidesMarkdownInternal = async ({ slug }: { slug: string[] }) => {
  * Caching this for the entire process is fine because the Markdown content is
  * baked into each deployment and cannot change. There's also nothing sensitive
  * here: this is just reading the MDX files from our GitHub repo.
+ *
+ * TODO: Figure out how to cache-bust partials in development without
+ * compromising error-checking...
  */
 const cache = <Args extends unknown[], Output>(fn: (...args: Args) => Promise<Output>) => {
   const _cache = new Map<string, Output>()

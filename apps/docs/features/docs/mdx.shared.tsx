@@ -11,17 +11,6 @@ import ButtonCard from '~/components/ButtonCard'
 import { Heading } from '~/components/CustomHTMLElements'
 import { Extensions } from '~/components/Extensions'
 import { JwtGenerator } from '~/components/JwtGenerator'
-import {
-  DatabaseSetup,
-  GetSessionWarning,
-  HuggingFaceDeployment,
-  KotlinProjectSetup,
-  MigrationWarnings,
-  ProjectSetup,
-  QuickstartIntro,
-  SocialProviderSettingsSupabase,
-  SocialProviderSetup,
-} from '~/components/MDX/partials'
 import { Mermaid } from '~/components/Mermaid'
 import { NavData } from '~/components/NavData'
 import { ProjectConfigVariables } from '~/components/ProjectConfigVariables'
@@ -41,28 +30,19 @@ const components = {
   Button,
   ButtonCard,
   CH,
-  DatabaseSetup,
   Extensions,
-  GetSessionWarning,
   GlassPanel,
-  HuggingFaceDeployment,
   IconArrowDown: ArrowDown,
   IconCheck: Check,
   IconPanel,
   Image: (props: any) => <ThemeImage fill className="object-contain" {...props} />,
   JwtGenerator,
-  KotlinProjectSetup,
   Link,
   Mermaid,
-  MigrationWarnings,
   NavData,
   ProjectConfigVariables,
-  ProjectSetup,
-  QuickstartIntro,
   RealtimeLimitsEstimator,
   SharedData,
-  SocialProviderSettingsSupabase,
-  SocialProviderSetup,
   StepHikeCompact,
   Tabs,
   TabPanel,
