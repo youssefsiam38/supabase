@@ -3,11 +3,11 @@ import { EOL } from 'node:os'
 import { join, sep } from 'node:path'
 import { DOCS_DIR } from '~/features/helpers.fs'
 
-const PARTIAL_REGEX = /(?<=^|\n)([^\S\r\n]*)<\s*?Partial\s+?path\s*?=\s*?(['"])[\w\/-]+\2[^>]*\/>/g
+const PARTIAL_REGEX = /(?<=^|\n)([^\S\r\n]*)<\s*?Partial\s+?path\s*?=\s*?(['"])[\w\/-]+\2[^>]*\/>/
 
 const _swapPartials = async (original: string, replace: (spliced: string) => Promise<string>) => {
   let replaced = original
-  const regex = new RegExp(PARTIAL_REGEX)
+  const regex = new RegExp(PARTIAL_REGEX, 'g')
 
   let match: RegExpExecArray | null
   while ((match = regex.exec(replaced)) !== null) {
