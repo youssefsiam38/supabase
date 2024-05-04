@@ -6,6 +6,7 @@ import matter from 'gray-matter'
 import { serialize } from 'next-mdx-remote/serialize'
 import remarkGfm from 'remark-gfm'
 import { ICommonMarkdown } from '~/components/reference/Reference.types'
+import { fillOutPartials } from '~/features/docs/partials'
 
 async function generateRefMarkdown(sections: ICommonMarkdown[], slug: string) {
   let markdownContent: Array<unknown> = []
@@ -32,7 +33,9 @@ async function generateRefMarkdown(sections: ICommonMarkdown[], slug: string) {
       if (!markdownExists) return null
 
       const fileContents = markdownExists ? fs.readFileSync(pathName, 'utf8') : ''
-      const { data, content } = matter(fileContents)
+      const { data, content: contentNoPartials } = matter(fileContents)
+
+      const content = await fillOutPartials(contentNoPartials)
 
       const codeHikeOptions: CodeHikeConfig = {
         theme: codeHikeTheme,

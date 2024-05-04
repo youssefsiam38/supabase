@@ -31,17 +31,6 @@ import { ProjectConfigVariables } from './ProjectConfigVariables'
 import { NavData } from './NavData'
 import { SharedData } from './SharedData'
 
-// Partials
-import DatabaseSetup from './MDX/database_setup.mdx'
-import GetSessionWarning from './MDX/get_session_warning.mdx'
-import HuggingFaceDeployment from './MDX/ai/quickstart_hf_deployment.mdx'
-import KotlinProjectSetup from './MDX/kotlin_project_setup.mdx'
-import MigrationWarnings from './MDX/migration_warnings.mdx'
-import ProjectSetup from './MDX/project_setup.mdx'
-import QuickstartIntro from './MDX/quickstart_intro.mdx'
-import SocialProviderSettingsSupabase from './MDX/social_provider_settings_supabase.mdx'
-import SocialProviderSetup from './MDX/social_provider_setup.mdx'
-
 // Icons
 import {
   IconMenuApi,
@@ -90,9 +79,7 @@ const components = {
   CH,
   CliGlobalFlagsHandler: () => <CliGlobalFlagsHandler />,
   CodeBlock,
-  DatabaseSetup,
   Extensions,
-  GetSessionWarning,
   GlassPanel,
   h2: (props: any) => (
     <Heading tag="h2" {...props}>
@@ -109,7 +96,6 @@ const components = {
       {props.children}
     </Heading>
   ),
-  HuggingFaceDeployment,
   IconCheck,
   IconMenuApi,
   IconArrowDown,
@@ -135,22 +121,16 @@ const components = {
   IconPanel,
   Image: (props: any) => <ThemeImage fill className="object-contain" {...props} />,
   JwtGenerator,
-  KotlinProjectSetup,
   Link,
   Mermaid,
-  MigrationWarnings,
   NavData,
   Options,
   Param,
   ProjectConfigVariables,
-  ProjectSetup,
-  QuickstartIntro,
   RealtimeLimitsEstimator,
   RefHeaderSection: (props: any) => <RefHeaderSection {...props} />,
   RefSubLayout,
   SharedData,
-  SocialProviderSettingsSupabase,
-  SocialProviderSetup,
   StepHikeCompact,
   TabPanel: (props: any) => <Tabs.Panel {...props}>{props.children}</Tabs.Panel>,
   Tabs: (props: any) => <Tabs wrappable {...props} />,

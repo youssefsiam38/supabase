@@ -60,6 +60,7 @@ const getGuidesMarkdownInternal = async ({ slug }: { slug: string[] }) => {
   }
 
   const content = await fillOutPartials(contentNoPartials)
+  // if (slug.join('/').includes('getting-started/tutorials')) console.log('AAAAHHH', content)
 
   return {
     pathname: `/guides/${slug.join('/')}` satisfies `/${string}`,
