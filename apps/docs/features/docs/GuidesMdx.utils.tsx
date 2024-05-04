@@ -3,7 +3,7 @@ import { type Metadata, type ResolvingMetadata } from 'next'
 import { redirect } from 'next/navigation'
 import { watch } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
-import { extname, join, sep } from 'node:path'
+import { extname, join, resolve, sep } from 'node:path'
 import { existsFile } from '~/features/helpers.fs'
 import type { OrPromise } from '~/features/helpers.types'
 import { fillOutPartials } from '~/features/docs/partials'
@@ -73,26 +73,28 @@ const getGuidesMarkdownInternal = async ({ slug }: { slug: string[] }) => {
 /**
  * Caching this for the entire process is fine because the Markdown content is
  * baked into each deployment and cannot change. There's also nothing sensitive
- * here: this is just reading the MDX files from our GitHub repo.
+ * here: this is just reading the public MDX files from the codebase.
+ *
+ * Unlike Next.js' unstable cache, this doesn't persist between deployments,
+ * which we don't want because the content _will_ change.
  */
 const cache = <Args extends unknown[], Output>(fn: (...args: Args) => Promise<Output>) => {
   const _cache = new Map<string, Output>()
 
-  /**
-   * A quick and dirty way of cache-busting partials changes in development.
-   * Next.js isn't aware of dependencies on partials because we do a string
-   * replacement.
-   */
-  let CACHE_BUST_KEY = 0
   if (IS_DEV) {
+    watch(resolve(GUIDES_DIRECTORY), { recursive: true }, (_, filename) => {
+      if (!filename) return
+      const cacheKey = [{ slug: filename.replace(/\.mdx$/, '').split(sep) }]
+      _cache.delete(JSON.stringify(cacheKey))
+    })
     watch(join(GUIDES_DIRECTORY, '..', 'partials'), { recursive: true }, () => {
-      CACHE_BUST_KEY = ++CACHE_BUST_KEY % Number.MAX_SAFE_INTEGER
-      if (CACHE_BUST_KEY === 0) _cache.clear()
+      // No easy way to tell which files use a partial, so just cache-bust the entire thing
+      _cache.clear()
     })
   }
 
   return async (...args: Args) => {
-    const cacheKey = JSON.stringify([...args, CACHE_BUST_KEY])
+    const cacheKey = JSON.stringify(args)
     if (!_cache.has(cacheKey)) {
       _cache.set(cacheKey, await fn(...args))
     }
