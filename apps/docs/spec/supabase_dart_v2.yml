@@ -385,11 +385,11 @@ functions:
           import 'package:google_sign_in/google_sign_in.dart';
           import 'package:supabase_flutter/supabase_flutter.dart';
 
-          /// Web Client ID that you registered with Google Cloud.
-          /// This will be used to perform Google sign in on Android.
+          // Web Client ID that you registered with Google Cloud.
+          // This will be used to perform Google sign in on Android.
           const webClientId = 'my-web.apps.googleusercontent.com';
 
-          /// iOS Client ID that you registered with Google Cloud.
+          // iOS Client ID that you registered with Google Cloud.
           const iosClientId = 'my-ios.apps.googleusercontent.com';
 
           final GoogleSignIn googleSignIn = GoogleSignIn(

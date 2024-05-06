@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { CodeBlock, IconDatabase } from 'ui'
-import components from '~/components'
+import mdxComponents from '~/components'
 import Options from '~/components/Options'
 import Param from '~/components/Params'
 import { Tabs, TabPanel } from '~/components/Tabs'
@@ -22,6 +22,17 @@ const RefFunctionSection: React.FC<IRefFunctionSection> = (props) => {
     hasTsRef && props.typeSpec ? extractTsDocNode(hasTsRef, props.typeSpec) : null
   const parameters = hasTsRef && tsDefinition ? generateParameters(tsDefinition) : item.params
   const shortText = hasTsRef && tsDefinition ? tsDefinition.signatures[0].comment?.shortText : ''
+
+  /**
+   * There are mismatches between client and server syntax highlighting when
+   * using `react-syntax-highlighter` within the Markdown sections, so remove
+   * syntax highlighting. (There aren't any long code blocks anyway.)
+   *
+   * This is temporary until we migrate references to App Router as well, then
+   * we can add back syntax highlighting with Code Hike instead.
+   */
+  const components = { ...mdxComponents }
+  delete components.code
 
   return (
     <>
