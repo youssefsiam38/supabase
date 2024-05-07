@@ -34,7 +34,7 @@ const Layout: FC<Props> = (props) => {
 
   return (
     <>
-      <MainSkeleton menuId={menuId}>
+      <MainSkeleton menu={{ menuId: menuId }}>
         <LayoutMainContent className="pb-0">{props.children}</LayoutMainContent>
       </MainSkeleton>
     </>

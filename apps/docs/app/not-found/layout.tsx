@@ -12,7 +12,7 @@ const metadata: Metadata = {
 }
 
 const NotFoundLayout = ({ children }: PropsWithChildren) => (
-  <MainSkeleton menuId={MenuId.Home}>
+  <MainSkeleton menu={{ menuId: MenuId.Home }}>
     <LayoutMainContent>{children}</LayoutMainContent>
   </MainSkeleton>
 )

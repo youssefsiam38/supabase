@@ -472,16 +472,40 @@ export interface paths {
     get: operations['ProjectsController_getProjectByFlyExtensionId']
   }
   '/platform/projects/{ref}/content': {
-    /** Gets project's content */
+    /**
+     * Gets project's content
+     * @deprecated
+     */
     get: operations['ContentController_getContent']
     /** Updates project's content */
-    put: operations['ContentController_updateWholeContent']
+    put: operations['ContentController_updateWholeContentV2']
     /** Creates project's content */
-    post: operations['ContentController_createContent']
+    post: operations['ContentController_createContentV2']
     /** Deletes project's contents */
     delete: operations['ContentController_deleteContents']
-    /** Updates project's content */
+    /**
+     * Updates project's content
+     * @deprecated
+     */
     patch: operations['ContentController_updateContent']
+  }
+  '/platform/projects/{ref}/content/item/{id}': {
+    /** Gets project's content by the given id */
+    get: operations['ContentController_getContentById']
+  }
+  '/platform/projects/{ref}/content/folders': {
+    /** Gets project's content root folder */
+    get: operations['ContentFoldersController_getRootFolder']
+    /** Creates project's content folder */
+    post: operations['ContentFoldersController_createFolder']
+    /** Deletes project's content folders */
+    delete: operations['ContentFoldersController_DeleteFolder']
+  }
+  '/platform/projects/{ref}/content/folders/{id}': {
+    /** Gets project's content folder */
+    get: operations['ContentFoldersController_getFolder']
+    /** Updates project's content folder */
+    patch: operations['ContentFoldersController_updateFolder']
   }
   '/platform/projects/{ref}/daily-stats': {
     /** Gets daily project stats */
@@ -796,11 +820,11 @@ export interface paths {
     post: operations['TelemetryPageController_sendServerPage']
   }
   '/platform/telemetry/activity': {
-    /** Sends mixpanel server activity */
+    /** Sends server activity */
     post: operations['TelemetryActivityController_sendServerActivity']
   }
   '/platform/telemetry/pageview': {
-    /** Send mixpanel page event */
+    /** Send pageview event */
     post: operations['TelemetryPageviewController_sendServerPageViewed']
   }
   '/platform/vercel/token': {
@@ -923,6 +947,11 @@ export interface paths {
     post: operations['GithubSecretAlertController_resetJwt']
   }
   '/system/projects/{ref}/functions/{function_slug}': {
+    /**
+     * Delete a function
+     * @description Deletes a function with the specified slug from the specified project.
+     */
+    delete: operations['SystemFunctionSlugController_deleteFunction']
     /**
      * Update a function
      * @description Updates a function with the specified slug and project.
@@ -1328,16 +1357,26 @@ export interface paths {
     get: operations['V0ProjectsMetricsController_getProjectsMetrics']
   }
   '/v0/projects/{ref}/content': {
-    /** Gets project's content */
+    /**
+     * Gets project's content
+     * @deprecated
+     */
     get: operations['ContentController_getContent']
     /** Updates project's content */
-    put: operations['ContentController_updateWholeContent']
+    put: operations['ContentController_updateWholeContentV2']
     /** Creates project's content */
-    post: operations['ContentController_createContent']
+    post: operations['ContentController_createContentV2']
     /** Deletes project's contents */
     delete: operations['ContentController_deleteContents']
-    /** Updates project's content */
+    /**
+     * Updates project's content
+     * @deprecated
+     */
     patch: operations['ContentController_updateContent']
+  }
+  '/v0/projects/{ref}/content/item/{id}': {
+    /** Gets project's content by the given id */
+    get: operations['ContentController_getContentById']
   }
   '/v0/projects/{ref}/databases': {
     /** Gets non-removed databases of a specified project */
@@ -2127,14 +2166,19 @@ export interface components {
       SMS_TEST_OTP_VALID_UNTIL: string
       HOOK_MFA_VERIFICATION_ATTEMPT_ENABLED: boolean
       HOOK_MFA_VERIFICATION_ATTEMPT_URI: string
+      HOOK_MFA_VERIFICATION_ATTEMPT_SECRETS: string
       HOOK_PASSWORD_VERIFICATION_ATTEMPT_ENABLED: boolean
       HOOK_PASSWORD_VERIFICATION_ATTEMPT_URI: string
+      HOOK_PASSWORD_VERIFICATION_ATTEMPT_SECRETS: string
       HOOK_CUSTOM_ACCESS_TOKEN_ENABLED: boolean
       HOOK_CUSTOM_ACCESS_TOKEN_URI: string
+      HOOK_CUSTOM_ACCESS_TOKEN_SECRETS: string
       HOOK_SEND_SMS_ENABLED: boolean
       HOOK_SEND_SMS_URI: string
+      HOOK_SEND_SMS_SECRETS: string
       HOOK_SEND_EMAIL_ENABLED: boolean
       HOOK_SEND_EMAIL_URI: string
+      HOOK_SEND_EMAIL_SECRETS: string
       EXTERNAL_APPLE_ENABLED: boolean
       EXTERNAL_APPLE_CLIENT_ID: string
       EXTERNAL_APPLE_SECRET: string
@@ -2199,6 +2243,8 @@ export interface components {
       EXTERNAL_ZOOM_ENABLED: boolean
       EXTERNAL_ZOOM_CLIENT_ID: string
       EXTERNAL_ZOOM_SECRET: string
+      DB_MAX_POOL_SIZE: number | null
+      API_MAX_REQUEST_DURATION: number | null
     }
     UpdateGoTrueConfigBody: {
       SITE_URL?: string
@@ -2282,14 +2328,19 @@ export interface components {
       SMS_TEMPLATE?: string
       HOOK_MFA_VERIFICATION_ATTEMPT_ENABLED?: boolean
       HOOK_MFA_VERIFICATION_ATTEMPT_URI?: string
+      HOOK_MFA_VERIFICATION_ATTEMPT_SECRETS?: string
       HOOK_PASSWORD_VERIFICATION_ATTEMPT_ENABLED?: boolean
       HOOK_PASSWORD_VERIFICATION_ATTEMPT_URI?: string
+      HOOK_PASSWORD_VERIFICATION_ATTEMPT_SECRETS?: string
       HOOK_CUSTOM_ACCESS_TOKEN_ENABLED?: boolean
       HOOK_CUSTOM_ACCESS_TOKEN_URI?: string
+      HOOK_CUSTOM_ACCESS_TOKEN_SECRETS?: string
       HOOK_SEND_SMS_ENABLED?: boolean
       HOOK_SEND_SMS_URI?: string
+      HOOK_SEND_SMS_SECRETS?: string
       HOOK_SEND_EMAIL_ENABLED?: boolean
       HOOK_SEND_EMAIL_URI?: string
+      HOOK_SEND_EMAIL_SECRETS?: string
       EXTERNAL_APPLE_ENABLED?: boolean
       EXTERNAL_APPLE_CLIENT_ID?: string
       EXTERNAL_APPLE_SECRET?: string
@@ -2354,6 +2405,8 @@ export interface components {
       EXTERNAL_ZOOM_ENABLED?: boolean
       EXTERNAL_ZOOM_CLIENT_ID?: string
       EXTERNAL_ZOOM_SECRET?: string
+      DB_MAX_POOL_SIZE?: number
+      API_MAX_REQUEST_DURATION?: number
     }
     UserBody: {
       id?: string
@@ -2679,8 +2732,8 @@ export interface components {
     InviteResponse: {
       organization_name: string
       invite_id: string
-      sso_mismatch: boolean
       token_does_not_exist: boolean
+      sso_mismatch: boolean
       email_match: boolean
       authorized_user: boolean
       expired_token: boolean
@@ -3695,15 +3748,28 @@ export interface components {
       description?: string
       project_id: number
       owner_id: number
-      last_updated_by: number
+      last_updated_by?: number
     }
     GetUserContentResponse: {
       data: components['schemas']['GetUserContentObject'][]
     }
-    CreateContentParams: {
+    GetUserContentByIdResponse: {
+      folder_id?: string
       id: string
+      inserted_at: string
+      updated_at: string
+      type: Record<string, never>
+      visibility: Record<string, never>
       name: string
-      description: string
+      description?: string
+      project_id: number
+      owner_id: number
+      last_updated_by?: number
+    }
+    CreateContentBody: {
+      id?: string
+      name: string
+      description?: string
       /** @enum {string} */
       type: 'sql' | 'report' | 'log_sql'
       /** @enum {string} */
@@ -3721,21 +3787,34 @@ export interface components {
       description?: string
       project_id: number
       owner_id: number
-      last_updated_by: number
+      last_updated_by?: number
     }
-    UpsertContentParams: {
-      id: string
+    CreateContentBodyV2: {
+      id?: string
       name: string
-      description: string
+      description?: string
       /** @enum {string} */
       type: 'sql' | 'report' | 'log_sql'
       /** @enum {string} */
       visibility: 'user' | 'project' | 'org' | 'public'
       content?: Record<string, never>
       owner_id?: number
-      project_id: number
+      folder_id?: string
     }
-    UpdateContentParams: {
+    UserContentObjectV2: {
+      id: string
+      inserted_at: string
+      updated_at: string
+      type: Record<string, never>
+      visibility: Record<string, never>
+      name: string
+      description?: string
+      project_id: number
+      owner_id: number
+      last_updated_by?: number
+      folder_id?: string
+    }
+    UpdateContentBody: {
       id?: string
       name?: string
       description?: string
@@ -3746,8 +3825,73 @@ export interface components {
       content?: Record<string, never>
       owner_id?: number
     }
+    UpsertContentBody: {
+      id?: string
+      name: string
+      description?: string
+      /** @enum {string} */
+      type: 'sql' | 'report' | 'log_sql'
+      /** @enum {string} */
+      visibility: 'user' | 'project' | 'org' | 'public'
+      content?: Record<string, never>
+      owner_id?: number
+      project_id: number
+    }
+    UpsertContentBodyV2: {
+      id?: string
+      name: string
+      description?: string
+      /** @enum {string} */
+      type: 'sql' | 'report' | 'log_sql'
+      /** @enum {string} */
+      visibility: 'user' | 'project' | 'org' | 'public'
+      content?: Record<string, never>
+      owner_id?: number
+      project_id: number
+      folder_id?: string
+    }
     BulkDeleteUserContentResponse: {
       id: string
+    }
+    UserContentFolder: {
+      id: string
+      name: string
+      project_id: number
+      owner_id: number
+      parent_id?: string | null
+    }
+    UserContentObjectMeta: {
+      id: string
+      inserted_at: string
+      updated_at: string
+      type: Record<string, never>
+      visibility: Record<string, never>
+      name: string
+      description?: string
+      project_id: number
+      owner_id: number
+      last_updated_by?: number
+      folder_id?: string
+    }
+    GetUserContentFolderResponse: {
+      data: {
+        folders?: components['schemas']['UserContentFolder'][]
+        contents?: components['schemas']['UserContentObjectMeta'][]
+      }
+    }
+    CreateContentFolderBody: {
+      name: string
+      parent_id?: string
+    }
+    CreateUserContentFolderResponse: {
+      id: string
+      name: string
+      project_id: number
+      owner_id: number
+      parent_id?: string | null
+    }
+    UpdateContentFolderBody: {
+      name: string
     }
     DatabaseDetailResponse: {
       /** @enum {string} */
@@ -4543,7 +4687,7 @@ export interface components {
       env_sync_error?: components['schemas']['SyncVercelEnvError']
     }
     UpdateVercelConnectionsBody: {
-      metadata: Record<string, never>
+      env_sync_targets?: ('production' | 'preview' | 'development')[]
     }
     DeleteVercelConnectionResponse: {
       id: string
@@ -5138,6 +5282,8 @@ export interface components {
       connection_string?: string
     }
     AuthConfigResponse: {
+      api_max_request_duration: number | null
+      db_max_pool_size: number | null
       disable_signup: boolean | null
       external_anonymous_users_enabled: boolean | null
       external_apple_additional_client_ids: string | null
@@ -5208,10 +5354,19 @@ export interface components {
       external_zoom_secret: string | null
       hook_custom_access_token_enabled: boolean | null
       hook_custom_access_token_uri: string | null
+      hook_custom_access_token_secrets: string | null
       hook_mfa_verification_attempt_enabled: boolean | null
       hook_mfa_verification_attempt_uri: string | null
+      hook_mfa_verification_attempt_secrets: string | null
       hook_password_verification_attempt_enabled: boolean | null
       hook_password_verification_attempt_uri: string | null
+      hook_password_verification_attempt_secrets: string | null
+      hook_send_sms_enabled: boolean | null
+      hook_send_sms_uri: string | null
+      hook_send_sms_secrets: string | null
+      hook_send_email_enabled: boolean | null
+      hook_send_email_uri: string | null
+      hook_send_email_secrets: string | null
       jwt_exp: number | null
       mailer_allow_unverified_email_sign_ins: boolean | null
       mailer_autoconfirm: boolean | null
@@ -5222,14 +5377,14 @@ export interface components {
       mailer_subjects_email_change: string | null
       mailer_subjects_invite: string | null
       mailer_subjects_magic_link: string | null
-      mailer_subjects_recovery: string | null
       mailer_subjects_reauthentication: string | null
+      mailer_subjects_recovery: string | null
       mailer_templates_confirmation_content: string | null
       mailer_templates_email_change_content: string | null
       mailer_templates_invite_content: string | null
       mailer_templates_magic_link_content: string | null
-      mailer_templates_recovery_content: string | null
       mailer_templates_reauthentication_content: string | null
+      mailer_templates_recovery_content: string | null
       mfa_max_enrolled_factors: number | null
       password_hibp_enabled: boolean | null
       password_min_length: number | null
@@ -5365,14 +5520,19 @@ export interface components {
       sms_template?: string
       hook_mfa_verification_attempt_enabled?: boolean
       hook_mfa_verification_attempt_uri?: string
+      hook_mfa_verification_attempt_secrets?: string
       hook_password_verification_attempt_enabled?: boolean
       hook_password_verification_attempt_uri?: string
+      hook_password_verification_attempt_secrets?: string
       hook_custom_access_token_enabled?: boolean
       hook_custom_access_token_uri?: string
+      hook_custom_access_token_secrets?: string
       hook_send_sms_enabled?: boolean
       hook_send_sms_uri?: string
+      hook_send_sms_secrets?: string
       hook_send_email_enabled?: boolean
       hook_send_email_uri?: string
+      hook_send_email_secrets?: string
       external_apple_enabled?: boolean
       external_apple_client_id?: string
       external_apple_secret?: string
@@ -5437,6 +5597,8 @@ export interface components {
       external_zoom_enabled?: boolean
       external_zoom_client_id?: string
       external_zoom_secret?: string
+      db_max_pool_size?: number
+      api_max_request_duration?: number
     }
     CreateThirdPartyAuthBody: {
       oidc_issuer_url?: string
@@ -5631,7 +5793,7 @@ export interface components {
       /** @enum {string} */
       visibility: 'user' | 'project' | 'org' | 'public'
       name: string
-      description: string | null
+      description?: string
       project: components['schemas']['SnippetProject']
       owner: components['schemas']['SnippetUser']
       updated_by: components['schemas']['SnippetUser']
@@ -5653,7 +5815,7 @@ export interface components {
       /** @enum {string} */
       visibility: 'user' | 'project' | 'org' | 'public'
       name: string
-      description: string | null
+      description?: string
       project: components['schemas']['SnippetProject']
       owner: components['schemas']['SnippetUser']
       updated_by: components['schemas']['SnippetUser']
@@ -9318,7 +9480,10 @@ export interface operations {
       }
     }
   }
-  /** Gets project's content */
+  /**
+   * Gets project's content
+   * @deprecated
+   */
   ContentController_getContent: {
     parameters: {
       path: {
@@ -9339,17 +9504,15 @@ export interface operations {
     }
   }
   /** Updates project's content */
-  ContentController_updateWholeContent: {
+  ContentController_updateWholeContentV2: {
     requestBody: {
       content: {
-        'application/json': components['schemas']['UpsertContentParams']
+        'application/json': components['schemas']['UpsertContentBodyV2']
       }
     }
     responses: {
       200: {
-        content: {
-          'application/json': components['schemas']['UserContentObject']
-        }
+        content: never
       }
       /** @description Failed to update project's content */
       500: {
@@ -9358,7 +9521,7 @@ export interface operations {
     }
   }
   /** Creates project's content */
-  ContentController_createContent: {
+  ContentController_createContentV2: {
     parameters: {
       path: {
         /** @description Project ref */
@@ -9367,13 +9530,13 @@ export interface operations {
     }
     requestBody: {
       content: {
-        'application/json': components['schemas']['CreateContentParams']
+        'application/json': components['schemas']['CreateContentBodyV2']
       }
     }
     responses: {
       201: {
         content: {
-          'application/json': components['schemas']['UserContentObject'][]
+          'application/json': components['schemas']['UserContentObjectV2']
         }
       }
       /** @description Failed to create project's content */
@@ -9405,7 +9568,10 @@ export interface operations {
       }
     }
   }
-  /** Updates project's content */
+  /**
+   * Updates project's content
+   * @deprecated
+   */
   ContentController_updateContent: {
     parameters: {
       query: {
@@ -9414,7 +9580,7 @@ export interface operations {
     }
     requestBody: {
       content: {
-        'application/json': components['schemas']['UpdateContentParams']
+        'application/json': components['schemas']['UpdateContentBody']
       }
     }
     responses: {
@@ -9424,6 +9590,140 @@ export interface operations {
         }
       }
       /** @description Failed to update project's content */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Gets project's content by the given id */
+  ContentController_getContentById: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+        /** @description Content id */
+        id: string
+      }
+    }
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['GetUserContentByIdResponse']
+        }
+      }
+      /** @description Failed to retrieve project's content by the given id */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Gets project's content root folder */
+  ContentFoldersController_getRootFolder: {
+    parameters: {
+      query?: {
+        type?: 'sql' | 'report' | 'log_sql'
+      }
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['GetUserContentFolderResponse']
+        }
+      }
+      /** @description Failed to retrieve project's content root folder */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Creates project's content folder */
+  ContentFoldersController_createFolder: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateContentFolderBody']
+      }
+    }
+    responses: {
+      201: {
+        content: {
+          'application/json': components['schemas']['CreateUserContentFolderResponse']
+        }
+      }
+      /** @description Failed to create project's content folder */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Deletes project's content folders */
+  ContentFoldersController_DeleteFolder: {
+    parameters: {
+      query: {
+        ids: string[]
+      }
+    }
+    responses: {
+      200: {
+        content: never
+      }
+      /** @description Failed to delete project's content folders */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Gets project's content folder */
+  ContentFoldersController_getFolder: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+        /** @description Content folder id */
+        id: string
+      }
+    }
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['GetUserContentFolderResponse']
+        }
+      }
+      /** @description Failed to retrieve project's content folder */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Updates project's content folder */
+  ContentFoldersController_updateFolder: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+        /** @description Content folder id */
+        id: string
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateContentFolderBody']
+      }
+    }
+    responses: {
+      200: {
+        content: never
+      }
+      /** @description Failed to update project's content folder */
       500: {
         content: never
       }
@@ -9623,6 +9923,7 @@ export interface operations {
         startDate: string
         endDate: string
         interval?: '1m' | '5m' | '10m' | '30m' | '1h' | '1d'
+        databaseIdentifier?: string
       }
       path: {
         /** @description Project ref */
@@ -11371,7 +11672,7 @@ export interface operations {
       }
     }
   }
-  /** Sends mixpanel server activity */
+  /** Sends server activity */
   TelemetryActivityController_sendServerActivity: {
     requestBody: {
       content: {
@@ -11382,13 +11683,13 @@ export interface operations {
       201: {
         content: never
       }
-      /** @description Failed to send mixpanel server activity */
+      /** @description Failed to send server activity */
       500: {
         content: never
       }
     }
   }
-  /** Send mixpanel page event */
+  /** Send pageview event */
   TelemetryPageviewController_sendServerPageViewed: {
     requestBody: {
       content: {
@@ -11399,7 +11700,7 @@ export interface operations {
       201: {
         content: never
       }
-      /** @description Failed to send mixpanel page event */
+      /** @description Failed to send pageview event */
       500: {
         content: never
       }
@@ -11710,7 +12011,7 @@ export interface operations {
       }
     }
     responses: {
-      200: {
+      204: {
         content: never
       }
       /** @description Failed to update Vercel connection */
@@ -12082,6 +12383,32 @@ export interface operations {
         content: never
       }
       /** @description Failed to reset JWT */
+      500: {
+        content: never
+      }
+    }
+  }
+  /**
+   * Delete a function
+   * @description Deletes a function with the specified slug from the specified project.
+   */
+  SystemFunctionSlugController_deleteFunction: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+        /** @description Function slug */
+        function_slug: string
+      }
+    }
+    responses: {
+      200: {
+        content: never
+      }
+      403: {
+        content: never
+      }
+      /** @description Failed to delete function with given slug */
       500: {
         content: never
       }

@@ -7,7 +7,7 @@ import { MainSkeleton } from './MainSkeleton'
 
 const HomeLayout = ({ children }: PropsWithChildren) => {
   return (
-    <MainSkeleton menuId={MenuId.Home}>
+    <MainSkeleton menu={{ menuId: MenuId.Home }}>
       <article>
         <HomePageCover title="Supabase Documentation" />
         <LayoutMainContent>
