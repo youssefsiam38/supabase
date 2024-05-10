@@ -561,7 +561,14 @@ class StorageExplorerStore {
       const fileName = !isWithinFolder
         ? this.sanitizeNameForDuplicateInColumn(file.name, autofix)
         : file.name
-      const formattedFileName = has(file, ['path']) && isWithinFolder ? file.path : fileName
+      const unsanitizedFormattedFileName =
+        has(file, ['path']) && isWithinFolder ? file.path : fileName
+      /**
+       * MacOS 14.0+ uses a narrow no-break space (U+202F) in the timestamp of
+       * automatically named screenshots (12-hour clock only). That is not a
+       * valid filename character for storage, so replace with a normal space.
+       */
+      const formattedFileName = unsanitizedFormattedFileName.replace(/\u202F/g, ' ')
       const formattedPathToFile =
         pathToFile.length > 0 ? `${pathToFile}/${formattedFileName}` : formattedFileName
 
